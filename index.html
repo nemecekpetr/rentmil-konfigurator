@@ -463,13 +463,29 @@
                         const total = calculateTotal();
                         
                         return h('div', { className: 'space-y-6' },
-                            h('div', { className: 'bg-rentmil-gradient text-white p-8 rounded-xl shadow-xl' },
-                                h('h2', { className: 'text-2xl font-bold mb-4' }, 'Vaše konfigurace'),
-                                h('div', { className: 'text-5xl font-bold mb-2' }, `${total.toLocaleString('cs-CZ')} Kč`),
-                                h('div', { className: 'text-lg opacity-90' }, 's DPH')
+                            h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
+                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Kontaktní údaje:'),
+                                h('div', { className: 'space-y-3' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Jméno:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Email:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.email)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Telefon:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.phone)
+                                    ),
+                                    contactData.address && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Adresa instalace:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.address)
+                                    )
+                                )
                             ),
                             h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
-                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Souhrn:'),
+                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Konfigurace bazénu:'),
                                 h('div', { className: 'space-y-3' },
                                     h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Tvar:'),
@@ -505,6 +521,12 @@
                                     )
                                 )
                             ),
+                            h('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-6 rounded-xl' },
+                                h('div', { className: 'flex justify-between items-center' },
+                                    h('span', { className: 'text-lg font-semibold text-gray-700' }, 'Celková cena s DPH:'),
+                                    h('span', { className: 'text-3xl font-bold text-green-600' }, `${total.toLocaleString('cs-CZ')} Kč`)
+                                )
+                            ),
                             submitStatus === 'success' && h('div', { className: 'bg-green-50 border-2 border-green-500 text-green-800 p-4 rounded-xl' },
                                 h('div', { className: 'flex items-center gap-2' },
                                     h(Check, { size: 24 }),
@@ -517,7 +539,7 @@
                             h('button', {
                                 onClick: handleSubmit,
                                 disabled: isSubmitting,
-                                className: 'w-full bg-rentmil-gradient text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-lg'
+                                className: 'w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-lg'
                             },
                                 isSubmitting ? [
                                     h(Loader2, { size: 24, className: 'animate-spin', key: 'loader' }),
