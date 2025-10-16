@@ -74,6 +74,10 @@
                     shape: null, size: null, depth: null, stairs: null,
                     filtration: null, heating: null, cover: null, extras: []
                 });
+                
+                const [contactData, setContactData] = useState({
+                    name: '', email: '', phone: '', address: ''
+                });
 
                 const WEBHOOK_URL = 'https://hook.eu1.make.com/nsc9znumlgq7e37uigodxxnmlyckxwn9';
 
@@ -86,6 +90,7 @@
                     { id: 'heating', title: 'Ohřev' },
                     { id: 'cover', title: 'Zastřešení' },
                     { id: 'extras', title: 'Doplňky' },
+                    { id: 'contact', title: 'Kontaktní údaje' },
                     { id: 'summary', title: 'Shrnutí' }
                 ];
 
@@ -198,6 +203,10 @@
                         
                         const formData = {
                             datum: new Date().toLocaleString('cs-CZ'),
+                            jmeno: contactData.name,
+                            email: contactData.email,
+                            telefon: contactData.phone,
+                            adresa: contactData.address,
                             tvar: shapes.find(s => s.id === config.shape)?.name || '',
                             rozmery: getCurrentSizes().find(s => s.id === config.size)?.name || '',
                             hloubka: config.depth ? depths.find(d => d.id === config.depth)?.name : 'V ceně (kruhový)',
@@ -397,6 +406,59 @@
                         );
                     }
 
+                    if (currentStep === 'contact') {
+                        return h('div', { className: 'max-w-2xl mx-auto' },
+                            h('div', { className: 'bg-white rounded-xl p-8 space-y-6' },
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Celé jméno *'),
+                                    h('input', {
+                                        type: 'text',
+                                        value: contactData.name,
+                                        onChange: (e) => setContactData({...contactData, name: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: 'Jan Novák',
+                                        required: true
+                                    })
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Email *'),
+                                    h('input', {
+                                        type: 'email',
+                                        value: contactData.email,
+                                        onChange: (e) => setContactData({...contactData, email: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: 'jan.novak@email.cz',
+                                        required: true
+                                    })
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Telefon *'),
+                                    h('input', {
+                                        type: 'tel',
+                                        value: contactData.phone,
+                                        onChange: (e) => setContactData({...contactData, phone: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: '+420 123 456 789',
+                                        required: true
+                                    })
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Adresa instalace'),
+                                    h('input', {
+                                        type: 'text',
+                                        value: contactData.address,
+                                        onChange: (e) => setContactData({...contactData, address: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: 'Praha 5, Radlická 10'
+                                    })
+                                ),
+                                h('div', { className: 'bg-blue-50 border-l-4 border-rentmil-water p-4 rounded' },
+                                    h('p', { className: 'text-sm text-gray-600' }, '* Povinné pole')
+                                )
+                            )
+                        );
+                    }
+
                     if (currentStep === 'summary') {
                         const total = calculateTotal();
                         
@@ -480,6 +542,7 @@
                     if (currentStep === 'filtration') return config.filtration !== null;
                     if (currentStep === 'heating') return config.heating !== null;
                     if (currentStep === 'cover') return config.cover !== null;
+                    if (currentStep === 'contact') return contactData.name && contactData.email && contactData.phone;
                     return true;
                 };
 
