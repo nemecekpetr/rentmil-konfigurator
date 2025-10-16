@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfigurátor bazénů Rentmil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script>
+        (function initApp() {
+            if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+                setTimeout(initApp, 50);
+                return;
+            }
+
+            const { useState, createElement: h } = React;
+
+            const ChevronRight = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
+                h('polyline', { points: '9 18 15 12 9 6' })
+            );
+
+            const ChevronLeft = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
+                h('polyline', { points: '15 18 9 12 15 6' })
+            );
+
+            const Check = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
+                h('polyline', { points: '20 6 9 17 4 12' })
+            );
+
+            const Download = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
+                h('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+                h('polyline', { points: '7 10 12 15 17 10' }),
+                h('line', { x1: '12', y1: '15', x2: '12', y2: '3' })
+            );
+
+            const Mail = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
+                h('path', { d: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z' }),
+                h('polyline', { points: '22,6 12,13 2,6' })
+            );
+
+            const Loader2 = ({ size = 24, className = '' }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', className },
+                h('path', { d: 'M21 12a9 9 0 1 1-6.219-8.56' })
+            );
+
+            const PoolConfigurator = () => {
+                const [step, setStep] = useState(0);
+                const [isSubmitting, setIsSubmitting] = useState(false);
+                const [submitStatus, setSubmitStatus] = useState(null);
+                
+                const [config, setConfig] = useState({
+                    shape: null, size: null, depth: null, stairs: null,
+                    filtration: null, heating: null, cover: null, extras: []
+                });
+
+                const WEBHOOK_URL = 'https://hook.eu1.make.com/nsc9znumlgq7e37uigodxxnmlyckxwn9';
+
+                const steps = [
+                    { id: 'shape', title: 'Tvar bazénu' },
+                    { id: 'size', title: 'Rozměry' },
+                    { id: 'depth', title: 'Hloubka' },
+                    { id: 'stairs', title: 'Schodiště' },
+                    { id: 'filtration', title: 'Filtrace' },
+                    { id: 'heating', title: 'Ohřev' },
+                    { id: 'cover', title: 'Zastřešení' },
+                    { id: 'extras', title: 'Doplňky' },
+                    { id: 'summary', title: 'Shrnutí' }
+                ];
+
+                const shapes = [
+                    { id: 'obdelnik', name: 'Obdélníkový', icon: '▭' },
+                    { id: 'rohovy', name: 'Rohový', icon: '▢', popular: true },
+                    { id: 'kruhovy', name: 'Kruhový', icon: '●' }
+                ];
+
+                const sizesObdelnik = [
+                    { id: '2x5', name: '2 × 5 m', price: 30500 },
+                    { id: '3x6', name: '3 × 6 m', price: 44500, popular: true },
+                    { id: '4x8', name: '4 × 8 m', price: 76500 }
+                ];
+
+                const sizesRohovy = [
+                    { id: '3x4', name: '3 × 4 m', price: 35500, popular: true },
+                    { id: '3x6', name: '3 × 6 m', price: 49000 },
+                    { id: '4x8', name: '4 × 8 m', price: 82500 }
+                ];
+
+                const sizesKruhovy = [
+                    { id: 'k3-1', name: 'Ø 3 m', price: 21000, popular: true },
+                    { id: 'k4-1.35', name: 'Ø 4 m', price: 41000 }
+                ];
+
+                const depths = [
+                    { id: '1.2', name: '1,2 m', priceAdd: 3000, popular: true },
+                    { id: '1.35', name: '1,35 m', priceAdd: 5000 },
+                    { id: '1.5', name: '1,5 m', priceAdd: 7000 }
+                ];
+
+                const stairs = [
+                    { id: 'rohove', name: 'Rohové schodiště', price: 0, popular: true },
+                    { id: 'rovne', name: 'Rovné schodiště', price: 8000 }
+                ];
+
+                const filtrations = [
+                    { id: 'none', name: 'Bez filtrace', price: 0 },
+                    { id: 'pisek6', name: 'Písková 6 m³/h', price: 15000, popular: true }
+                ];
+
+                const heating = [
+                    { id: 'none', name: 'Bez ohřevu', price: 0 },
+                    { id: 'tepelne-9kw', name: 'Tepelné čerpadlo 9 kW', price: 55000, popular: true }
+                ];
+
+                const covers = [
+                    { id: 'none', name: 'Bez zastřešení', price: 0 },
+                    { id: 'nizke', name: 'Nízké zastřešení', price: 85000, popular: true }
+                ];
+
+                const extras = [
+                    { id: 'protiproud', name: 'Protiproud', price: 28000 },
+                    { id: 'led', name: 'LED osvětlení', price: 6500 }
+                ];
+
+                const getCurrentSizes = () => {
+                    if (config.shape === 'obdelnik') return sizesObdelnik;
+                    if (config.shape === 'rohovy') return sizesRohovy;
+                    if (config.shape === 'kruhovy') return sizesKruhovy;
+                    return [];
+                };
+
+                const calculateTotal = () => {
+                    let total = 0;
+                    const sizes = getCurrentSizes();
+                    const selectedSize = sizes.find(s => s.id === config.size);
+                    total += selectedSize?.price || 0;
+                    
+                    if (config.shape !== 'kruhovy' && config.depth) {
+                        const depth = depths.find(d => d.id === config.depth);
+                        total += depth?.priceAdd || 0;
+                    }
+                    
+                    if (config.stairs) {
+                        const stair = stairs.find(s => s.id === config.stairs);
+                        total += stair?.price || 0;
+                    }
+                    
+                    if (config.filtration) {
+                        const filt = filtrations.find(f => f.id === config.filtration);
+                        total += filt?.price || 0;
+                    }
+                    
+                    if (config.heating) {
+                        const heat = heating.find(h => h.id === config.heating);
+                        total += heat?.price || 0;
+                    }
+                    
+                    if (config.cover) {
+                        const cov = covers.find(c => c.id === config.cover);
+                        total += cov?.price || 0;
+                    }
+                    
+                    config.extras.forEach(extraId => {
+                        const extra = extras.find(e => e.id === extraId);
+                        total += extra?.price || 0;
+                    });
+                    
+                    return total;
+                };
+
+                const handleSubmit = async () => {
+                    setIsSubmitting(true);
+                    setSubmitStatus(null);
+
+                    try {
+                        const total = calculateTotal();
+                        const totalVAT = Math.round(total * 1.21);
+                        
+                        const formData = {
+                            datum: new Date().toLocaleString('cs-CZ'),
+                            tvar: shapes.find(s => s.id === config.shape)?.name || '',
+                            rozmery: getCurrentSizes().find(s => s.id === config.size)?.name || '',
+                            hloubka: config.depth ? depths.find(d => d.id === config.depth)?.name : 'V ceně (kruhový)',
+                            schodiste: stairs.find(s => s.id === config.stairs)?.name || '',
+                            filtrace: filtrations.find(f => f.id === config.filtration)?.name || 'Neurčeno',
+                            ohrev: heating.find(h => h.id === config.heating)?.name || 'Neurčeno',
+                            zastreseni: covers.find(c => c.id === config.cover)?.name || 'Neurčeno',
+                            doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné',
+                            cena_bez_dph: `${total.toLocaleString('cs-CZ')} Kč`,
+                            cena_s_dph: `${totalVAT.toLocaleString('cs-CZ')} Kč`
+                        };
+
+                        const response = await fetch(WEBHOOK_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData)
+                        });
+
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        setSubmitStatus('success');
+                        
+                    } catch (error) {
+                        console.error('Chyba:', error);
+                        setSubmitStatus('error');
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                };
+
+                const renderStep = () => {
+                    const currentStep = steps[step].id;
+
+                    if (currentStep === 'shape') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
+                            shapes.map(shape =>
+                                h('div', {
+                                    key: shape.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, shape: shape.id })),
+                                    className: `p-8 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.shape === shape.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    shape.popular && h('span', { className: 'text-xs bg-orange-500 text-white px-2 py-1 rounded' }, 'TOP'),
+                                    h('div', { className: 'text-6xl text-center my-4' }, shape.icon),
+                                    h('h3', { className: 'text-xl font-bold text-center' }, shape.name)
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'size') {
+                        const sizes = getCurrentSizes();
+                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                            sizes.map(size =>
+                                h('div', {
+                                    key: size.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, size: size.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.size === size.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    size.popular && h('span', { className: 'text-xs bg-orange-500 text-white px-2 py-1 rounded' }, 'TOP'),
+                                    h('div', { className: 'text-lg font-bold text-center' }, size.name),
+                                    h('div', { className: 'text-blue-600 text-center' }, `${size.price.toLocaleString('cs-CZ')} Kč`)
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'depth') {
+                        if (config.shape === 'kruhovy') {
+                            return h('div', { className: 'text-center py-12' },
+                                h('p', { className: 'text-lg mb-4' }, 'U kruhových bazénů je hloubka v ceně.'),
+                                h('button', {
+                                    onClick: () => setStep(step + 1),
+                                    className: 'bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors'
+                                }, 'Pokračovat')
+                            );
+                        }
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+                            depths.map(depth =>
+                                h('div', {
+                                    key: depth.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, depth: depth.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.depth === depth.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    h('div', { className: 'text-3xl font-bold text-center mb-2' }, depth.name),
+                                    h('div', { className: 'text-blue-600 text-center' },
+                                        depth.priceAdd > 0 ? `+${depth.priceAdd.toLocaleString('cs-CZ')} Kč` : 'v ceně'
+                                    )
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'stairs') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            stairs.map(stair =>
+                                h('div', {
+                                    key: stair.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.stairs === stair.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    h('div', { className: 'text-lg font-bold mb-2' }, stair.name),
+                                    h('div', { className: 'text-blue-600' },
+                                        stair.price > 0 ? `+${stair.price.toLocaleString('cs-CZ')} Kč` : 'v ceně'
+                                    )
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'filtration') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            filtrations.map(filt =>
+                                h('div', {
+                                    key: filt.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.filtration === filt.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    h('div', { className: 'text-lg font-bold mb-2' }, filt.name),
+                                    h('div', { className: 'text-blue-600' },
+                                        filt.price > 0 ? `+${filt.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                    )
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'heating') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            heating.map(heat =>
+                                h('div', {
+                                    key: heat.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.heating === heat.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    h('div', { className: 'text-lg font-bold mb-2' }, heat.name),
+                                    h('div', { className: 'text-blue-600' },
+                                        heat.price > 0 ? `+${heat.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                    )
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'cover') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            covers.map(cover =>
+                                h('div', {
+                                    key: cover.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.cover === cover.id ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    h('div', { className: 'text-lg font-bold mb-2' }, cover.name),
+                                    h('div', { className: 'text-blue-600' },
+                                        cover.price > 0 ? `+${cover.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                    )
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'extras') {
+                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                            extras.map(extra =>
+                                h('div', {
+                                    key: extra.id,
+                                    onClick: () => {
+                                        setConfig(prev => ({
+                                            ...prev,
+                                            extras: prev.extras.includes(extra.id)
+                                                ? prev.extras.filter(id => id !== extra.id)
+                                                : [...prev.extras, extra.id]
+                                        }));
+                                    },
+                                    className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.extras.includes(extra.id) ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
+                                    }`
+                                },
+                                    config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
+                                        h(Check, { size: 20 })
+                                    ),
+                                    h('div', { className: 'font-semibold text-sm mb-2' }, extra.name),
+                                    h('div', { className: 'text-blue-600 text-sm' }, `+${extra.price.toLocaleString('cs-CZ')} Kč`)
+                                )
+                            )
+                        );
+                    }
+
+                    if (currentStep === 'summary') {
+                        const total = calculateTotal();
+                        const totalVAT = Math.round(total * 1.21);
+                        
+                        return h('div', { className: 'space-y-6' },
+                            h('div', { className: 'bg-blue-600 text-white p-8 rounded-xl' },
+                                h('h2', { className: 'text-2xl font-bold mb-4' }, 'Vaše konfigurace'),
+                                h('div', { className: 'grid grid-cols-2 gap-4' },
+                                    h('div', null,
+                                        h('div', { className: 'text-sm mb-1' }, 'Bez DPH'),
+                                        h('div', { className: 'text-3xl font-bold' }, `${total.toLocaleString('cs-CZ')} Kč`)
+                                    ),
+                                    h('div', null,
+                                        h('div', { className: 'text-sm mb-1' }, 'S DPH (21%)'),
+                                        h('div', { className: 'text-3xl font-bold' }, `${totalVAT.toLocaleString('cs-CZ')} Kč`)
+                                    )
+                                )
+                            ),
+                            h('div', { className: 'bg-white border-2 p-6 rounded-xl' },
+                                h('h3', { className: 'text-xl font-bold mb-4' }, 'Souhrn:'),
+                                h('div', { className: 'space-y-2' },
+                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Tvar:'),
+                                        h('span', null, shapes.find(s => s.id === config.shape)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Rozměry:'),
+                                        h('span', null, getCurrentSizes().find(s => s.id === config.size)?.name)
+                                    ),
+                                    config.depth && h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Hloubka:'),
+                                        h('span', null, depths.find(d => d.id === config.depth)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Schodiště:'),
+                                        h('span', null, stairs.find(s => s.id === config.stairs)?.name)
+                                    ),
+                                    config.filtration && h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Filtrace:'),
+                                        h('span', null, filtrations.find(f => f.id === config.filtration)?.name)
+                                    ),
+                                    config.heating && h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Ohřev:'),
+                                        h('span', null, heating.find(h => h.id === config.heating)?.name)
+                                    ),
+                                    config.cover && h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Zastřešení:'),
+                                        h('span', null, covers.find(c => c.id === config.cover)?.name)
+                                    ),
+                                    config.extras.length > 0 && h('div', { className: 'flex justify-between border-b pb-2' },
+                                        h('span', { className: 'font-semibold' }, 'Doplňky:'),
+                                        h('span', null, config.extras.map(id => extras.find(e => e.id === id)?.name).join(', '))
+                                    )
+                                )
+                            ),
+                            submitStatus === 'success' && h('div', { className: 'bg-green-50 border-2 border-green-500 text-green-800 p-4 rounded-xl' },
+                                h('div', { className: 'flex items-center gap-2' },
+                                    h(Check, { size: 24 }),
+                                    h('span', { className: 'font-semibold' }, 'Poptávka byla úspěšně odeslána! Brzy vás kontaktujeme.')
+                                )
+                            ),
+                            submitStatus === 'error' && h('div', { className: 'bg-red-50 border-2 border-red-500 text-red-800 p-4 rounded-xl' },
+                                h('span', { className: 'font-semibold' }, 'Chyba při odesílání. Zkuste to prosím znovu nebo nás kontaktujte přímo.')
+                            ),
+                            h('div', { className: 'flex gap-4' },
+                                h('button', {
+                                    className: 'flex-1 bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-600 transition-colors',
+                                    onClick: () => alert('Funkce stahování PDF bude implementována v další verzi')
+                                },
+                                    h(Download, { size: 20 }),
+                                    'Stáhnout PDF'
+                                ),
+                                h('button', {
+                                    onClick: handleSubmit,
+                                    disabled: isSubmitting,
+                                    className: 'flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+                                },
+                                    isSubmitting ? [
+                                        h(Loader2, { size: 20, className: 'animate-spin', key: 'loader' }),
+                                        'Odesílám...'
+                                    ] : [
+                                        h(Mail, { size: 20, key: 'mail' }),
+                                        'Odeslat poptávku'
+                                    ]
+                                )
+                            )
+                        );
+                    }
+
+                    return null;
+                };
+
+                return h('div', { className: 'min-h-screen bg-gray-100 p-4' },
+                    h('div', { className: 'max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden' },
+                        h('div', { className: 'bg-blue-600 text-white p-8' },
+                            h('h1', { className: 'text-3xl font-bold' }, 'Konfigurátor bazénů Rentmil'),
+                            h('p', { className: 'text-blue-100 mt-2' }, 'Sestavte si svůj vysněný bazén')
+                        ),
+                        h('div', { className: 'bg-gray-100 px-8 py-4' },
+                            h('div', { className: 'flex justify-between mb-2' },
+                                steps.map((s, idx) =>
+                                    h('div', { key: s.id, className: 'flex items-center' },
+                                        h('div', {
+                                            className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                                idx <= step ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                                            }`
+                                        }, idx < step ? h(Check, { size: 16 }) : idx + 1),
+                                        idx < steps.length - 1 && h('div', {
+                                            className: `h-1 w-8 ${idx < step ? 'bg-blue-600' : 'bg-gray-300'}`
+                                        })
+                                    )
+                                )
+                            ),
+                            h('div', { className: 'text-center text-sm text-gray-600' },
+                                `Krok ${step + 1} z ${steps.length}: ${steps[step].title}`
+                            )
+                        ),
+                        h('div', { className: 'p-8' },
+                            h('h2', { className: 'text-2xl font-bold mb-6' }, steps[step].title),
+                            renderStep()
+                        ),
+                        h('div', { className: 'bg-gray-50 px-8 py-6 flex justify-between border-t' },
+                            h('button', {
+                                onClick: () => setStep(Math.max(0, step - 1)),
+                                disabled: step === 0,
+                                className: 'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold disabled:opacity-50 hover:bg-gray-200 transition-colors'
+                            },
+                                h(ChevronLeft, { size: 20 }),
+                                'Zpět'
+                            ),
+                            h('div', { className: 'text-center' },
+                                h('div', { className: 'text-sm text-gray-600' }, 'Aktuální cena'),
+                                h('div', { className: 'text-2xl font-bold text-blue-600' },
+                                    `${calculateTotal().toLocaleString('cs-CZ')} Kč`
+                                )
+                            ),
+                            h('button', {
+                                onClick: () => setStep(Math.min(steps.length - 1, step + 1)),
+                                className: 'flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors'
+                            },
+                                'Další',
+                                h(ChevronRight, { size: 20 })
+                            )
+                        )
+                    )
+                );
+            };
+
+            ReactDOM.render(h(PoolConfigurator), document.getElementById('root'));
+        })();
+    </script>
+</body>
+</html>
