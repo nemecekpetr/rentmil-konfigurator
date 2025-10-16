@@ -17,7 +17,7 @@
         .bg-rentmil-blue { background-color: #01384B; }
         .bg-rentmil-water { background-color: #48A9A6; }
         .bg-rentmil-orange { background-color: #FF8621; }
-        .bg-rentmil-gradient { background: linear-gradient(135deg, #FF8621 0%, #48A9A6 100%); }
+        .bg-rentmil-gradient { background: linear-gradient(180deg, #48A9A6 0%, #01384B 100%); }
         .text-rentmil-blue { color: #01384B; }
         .text-rentmil-water { color: #48A9A6; }
         .text-rentmil-orange { color: #FF8621; }
@@ -488,3 +488,77 @@
                                 )
                             )
                         );
+                    }
+
+                    return null;
+                };
+
+                return h('div', { className: 'min-h-screen bg-gray-100 p-4' },
+                    h('div', { className: 'max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden' },
+                        h('div', { className: 'bg-white p-6 text-center border-b' },
+                            h('img', { 
+                                src: 'https://raw.githubusercontent.com/nemecekpetr/rentmil-konfigurator/main/logo%20rentmil.png',
+                                alt: 'Rentmil',
+                                className: 'mx-auto',
+                                style: { maxWidth: '200px', height: 'auto' }
+                            })
+                        ),
+                        h('div', { className: 'bg-rentmil-orange text-white p-8' },
+                            h('h1', { className: 'text-3xl font-bold' }, 'Konfigurátor bazénů'),
+                            h('p', { className: 'text-white mt-2 opacity-90' }, 'Vy zenujete, my bazénujeme')
+                        ),
+                        h('div', { className: 'bg-gray-100 px-8 py-4' },
+                            h('div', { className: 'flex justify-between mb-2' },
+                                steps.map((s, idx) =>
+                                    h('div', { key: s.id, className: 'flex items-center' },
+                                        h('div', {
+                                            className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                                idx <= step ? 'bg-rentmil-water text-white' : 'bg-gray-300 text-gray-600'
+                                            }`
+                                        }, idx < step ? h(Check, { size: 16 }) : idx + 1),
+                                        idx < steps.length - 1 && h('div', {
+                                            className: `h-1 w-8 ${idx < step ? 'bg-rentmil-water' : 'bg-gray-300'}`
+                                        })
+                                    )
+                                )
+                            ),
+                            h('div', { className: 'text-center text-sm text-gray-600' },
+                                `Krok ${step + 1} z ${steps.length}: ${steps[step].title}`
+                            )
+                        ),
+                        h('div', { className: 'p-8' },
+                            h('h2', { className: 'text-2xl font-bold mb-6 text-rentmil-blue' }, steps[step].title),
+                            renderStep()
+                        ),
+                        h('div', { className: 'bg-gray-50 px-8 py-6 flex justify-between border-t' },
+                            h('button', {
+                                onClick: () => setStep(Math.max(0, step - 1)),
+                                disabled: step === 0,
+                                className: 'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold disabled:opacity-50 hover:bg-gray-200 transition-colors text-rentmil-blue'
+                            },
+                                h(ChevronLeft, { size: 20 }),
+                                'Zpět'
+                            ),
+                            h('div', { className: 'text-center' },
+                                h('div', { className: 'text-sm text-gray-600' }, 'Aktuální cena'),
+                                h('div', { className: 'text-2xl font-bold text-rentmil-orange' },
+                                    `${calculateTotal().toLocaleString('cs-CZ')} Kč`
+                                )
+                            ),
+                            h('button', {
+                                onClick: () => setStep(Math.min(steps.length - 1, step + 1)),
+                                className: 'flex items-center gap-2 bg-rentmil-gradient text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all'
+                            },
+                                'Další',
+                                h(ChevronRight, { size: 20 })
+                            )
+                        )
+                    )
+                );
+            };
+
+            ReactDOM.render(h(PoolConfigurator), document.getElementById('root'));
+        })();
+    </script>
+</body>
+</html>
