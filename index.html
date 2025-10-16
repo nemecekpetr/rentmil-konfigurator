@@ -6,7 +6,12 @@
     <title>Konfigurátor bazénů Rentmil</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; padding: 0; }
+        body { 
+            margin: 0; 
+            padding: 0;
+            background: linear-gradient(180deg, #48A9A6 0%, #01384B 100%);
+            min-height: 100vh;
+        }
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -22,7 +27,6 @@
         .text-rentmil-water { color: #48A9A6; }
         .text-rentmil-orange { color: #FF8621; }
         .border-rentmil-water { border-color: #48A9A6; }
-        .hover\:bg-rentmil-water:hover { background-color: #48A9A6; }
     </style>
 </head>
 <body>
@@ -50,12 +54,6 @@
 
             const Check = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
                 h('polyline', { points: '20 6 9 17 4 12' })
-            );
-
-            const Download = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
-                h('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
-                h('polyline', { points: '7 10 12 15 17 10' }),
-                h('line', { x1: '12', y1: '15', x2: '12', y2: '3' })
             );
 
             const Mail = ({ size = 24 }) => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' },
@@ -188,7 +186,7 @@
                         total += extra?.price || 0;
                     });
                     
-                    return total;
+                    return Math.round(total * 1.21);
                 };
 
                 const handleSubmit = async () => {
@@ -196,8 +194,7 @@
                     setSubmitStatus(null);
 
                     try {
-                        const total = calculateTotal();
-                        const totalVAT = Math.round(total * 1.21);
+                        const totalVAT = calculateTotal();
                         
                         const formData = {
                             datum: new Date().toLocaleString('cs-CZ'),
@@ -209,7 +206,6 @@
                             ohrev: heating.find(h => h.id === config.heating)?.name || 'Neurčeno',
                             zastreseni: covers.find(c => c.id === config.cover)?.name || 'Neurčeno',
                             doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné',
-                            cena_bez_dph: `${total.toLocaleString('cs-CZ')} Kč`,
                             cena_s_dph: `${totalVAT.toLocaleString('cs-CZ')} Kč`
                         };
 
@@ -240,7 +236,7 @@
                                     key: shape.id,
                                     onClick: () => setConfig(prev => ({ ...prev, shape: shape.id })),
                                     className: `p-8 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.shape === shape.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.shape === shape.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     shape.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
@@ -259,12 +255,12 @@
                                     key: size.id,
                                     onClick: () => setConfig(prev => ({ ...prev, size: size.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.size === size.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.size === size.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     size.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
                                     h('div', { className: 'text-lg font-bold text-center text-rentmil-blue' }, size.name),
-                                    h('div', { className: 'text-rentmil-orange text-center font-semibold' }, `${size.price.toLocaleString('cs-CZ')} Kč`)
+                                    h('div', { className: 'text-rentmil-orange text-center font-semibold' }, `${Math.round(size.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH`)
                                 )
                             )
                         );
@@ -273,10 +269,10 @@
                     if (currentStep === 'depth') {
                         if (config.shape === 'kruhovy') {
                             return h('div', { className: 'text-center py-12' },
-                                h('p', { className: 'text-lg mb-4' }, 'U kruhových bazénů je hloubka v ceně.'),
+                                h('p', { className: 'text-lg mb-4 text-white' }, 'U kruhových bazénů je hloubka v ceně.'),
                                 h('button', {
                                     onClick: () => setStep(step + 1),
-                                    className: 'bg-rentmil-gradient text-white px-8 py-3 rounded-lg hover:opacity-90 transition-all'
+                                    className: 'bg-rentmil-orange text-white px-8 py-3 rounded-lg hover:opacity-90 transition-all font-semibold'
                                 }, 'Pokračovat')
                             );
                         }
@@ -286,12 +282,12 @@
                                     key: depth.id,
                                     onClick: () => setConfig(prev => ({ ...prev, depth: depth.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     h('div', { className: 'text-3xl font-bold text-center mb-2 text-rentmil-blue' }, depth.name),
                                     h('div', { className: 'text-rentmil-orange text-center font-semibold' },
-                                        depth.priceAdd > 0 ? `+${depth.priceAdd.toLocaleString('cs-CZ')} Kč` : 'v ceně'
+                                        depth.priceAdd > 0 ? `+${Math.round(depth.priceAdd * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
                                     )
                                 )
                             )
@@ -305,12 +301,12 @@
                                     key: stair.id,
                                     onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        stair.price > 0 ? `+${stair.price.toLocaleString('cs-CZ')} Kč` : 'v ceně'
+                                        stair.price > 0 ? `+${Math.round(stair.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
                                     )
                                 )
                             )
@@ -324,12 +320,12 @@
                                     key: filt.id,
                                     onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, filt.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        filt.price > 0 ? `+${filt.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                        filt.price > 0 ? `+${Math.round(filt.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
                                     )
                                 )
                             )
@@ -343,12 +339,12 @@
                                     key: heat.id,
                                     onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, heat.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        heat.price > 0 ? `+${heat.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                        heat.price > 0 ? `+${Math.round(heat.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
                                     )
                                 )
                             )
@@ -362,12 +358,12 @@
                                     key: cover.id,
                                     onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, cover.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        cover.price > 0 ? `+${cover.price.toLocaleString('cs-CZ')} Kč` : '—'
+                                        cover.price > 0 ? `+${Math.round(cover.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
                                     )
                                 )
                             )
@@ -388,14 +384,14 @@
                                         }));
                                     },
                                     className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300'
+                                        config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
                                     config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
-                                        h(Check, { size: 20 })
+                                        h(Check, { size: 20, className: 'text-rentmil-water' })
                                     ),
                                     h('div', { className: 'font-semibold text-sm mb-2 text-rentmil-blue' }, extra.name),
-                                    h('div', { className: 'text-rentmil-orange text-sm font-semibold' }, `+${extra.price.toLocaleString('cs-CZ')} Kč`)
+                                    h('div', { className: 'text-rentmil-orange text-sm font-semibold' }, `+${Math.round(extra.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH`)
                                 )
                             )
                         );
@@ -403,56 +399,47 @@
 
                     if (currentStep === 'summary') {
                         const total = calculateTotal();
-                        const totalVAT = Math.round(total * 1.21);
                         
                         return h('div', { className: 'space-y-6' },
-                            h('div', { className: 'bg-rentmil-gradient text-white p-8 rounded-xl' },
+                            h('div', { className: 'bg-rentmil-gradient text-white p-8 rounded-xl shadow-xl' },
                                 h('h2', { className: 'text-2xl font-bold mb-4' }, 'Vaše konfigurace'),
-                                h('div', { className: 'grid grid-cols-2 gap-4' },
-                                    h('div', null,
-                                        h('div', { className: 'text-sm mb-1' }, 'Bez DPH'),
-                                        h('div', { className: 'text-3xl font-bold' }, `${total.toLocaleString('cs-CZ')} Kč`)
-                                    ),
-                                    h('div', null,
-                                        h('div', { className: 'text-sm mb-1' }, 'S DPH (21%)'),
-                                        h('div', { className: 'text-3xl font-bold' }, `${totalVAT.toLocaleString('cs-CZ')} Kč`)
-                                    )
-                                )
+                                h('div', { className: 'text-5xl font-bold mb-2' }, `${total.toLocaleString('cs-CZ')} Kč`),
+                                h('div', { className: 'text-lg opacity-90' }, 's DPH')
                             ),
-                            h('div', { className: 'bg-white border-2 p-6 rounded-xl' },
+                            h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
                                 h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Souhrn:'),
-                                h('div', { className: 'space-y-2' },
-                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                h('div', { className: 'space-y-3' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Tvar:'),
-                                        h('span', null, shapes.find(s => s.id === config.shape)?.name)
+                                        h('span', { className: 'text-gray-700' }, shapes.find(s => s.id === config.shape)?.name)
                                     ),
-                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Rozměry:'),
-                                        h('span', null, getCurrentSizes().find(s => s.id === config.size)?.name)
+                                        h('span', { className: 'text-gray-700' }, getCurrentSizes().find(s => s.id === config.size)?.name)
                                     ),
-                                    config.depth && h('div', { className: 'flex justify-between border-b pb-2' },
+                                    config.depth && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Hloubka:'),
-                                        h('span', null, depths.find(d => d.id === config.depth)?.name)
+                                        h('span', { className: 'text-gray-700' }, depths.find(d => d.id === config.depth)?.name)
                                     ),
-                                    h('div', { className: 'flex justify-between border-b pb-2' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Schodiště:'),
-                                        h('span', null, stairs.find(s => s.id === config.stairs)?.name)
+                                        h('span', { className: 'text-gray-700' }, stairs.find(s => s.id === config.stairs)?.name)
                                     ),
-                                    config.filtration && h('div', { className: 'flex justify-between border-b pb-2' },
+                                    config.filtration && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Filtrace:'),
-                                        h('span', null, filtrations.find(f => f.id === config.filtration)?.name)
+                                        h('span', { className: 'text-gray-700' }, filtrations.find(f => f.id === config.filtration)?.name)
                                     ),
-                                    config.heating && h('div', { className: 'flex justify-between border-b pb-2' },
+                                    config.heating && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Ohřev:'),
-                                        h('span', null, heating.find(h => h.id === config.heating)?.name)
+                                        h('span', { className: 'text-gray-700' }, heating.find(h => h.id === config.heating)?.name)
                                     ),
-                                    config.cover && h('div', { className: 'flex justify-between border-b pb-2' },
+                                    config.cover && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Zastřešení:'),
-                                        h('span', null, covers.find(c => c.id === config.cover)?.name)
+                                        h('span', { className: 'text-gray-700' }, covers.find(c => c.id === config.cover)?.name)
                                     ),
-                                    config.extras.length > 0 && h('div', { className: 'flex justify-between border-b pb-2' },
+                                    config.extras.length > 0 && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Doplňky:'),
-                                        h('span', null, config.extras.map(id => extras.find(e => e.id === id)?.name).join(', '))
+                                        h('span', { className: 'text-gray-700' }, config.extras.map(id => extras.find(e => e.id === id)?.name).join(', '))
                                     )
                                 )
                             ),
@@ -465,27 +452,18 @@
                             submitStatus === 'error' && h('div', { className: 'bg-red-50 border-2 border-red-500 text-red-800 p-4 rounded-xl' },
                                 h('span', { className: 'font-semibold' }, 'Chyba při odesílání. Zkuste to prosím znovu nebo nás kontaktujte přímo.')
                             ),
-                            h('div', { className: 'flex gap-4' },
-                                h('button', {
-                                    className: 'flex-1 bg-green-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-600 transition-colors',
-                                    onClick: () => alert('Funkce stahování PDF bude implementována v další verzi')
-                                },
-                                    h(Download, { size: 20 }),
-                                    'Stáhnout PDF'
-                                ),
-                                h('button', {
-                                    onClick: handleSubmit,
-                                    disabled: isSubmitting,
-                                    className: 'flex-1 bg-rentmil-gradient text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed'
-                                },
-                                    isSubmitting ? [
-                                        h(Loader2, { size: 20, className: 'animate-spin', key: 'loader' }),
-                                        'Odesílám...'
-                                    ] : [
-                                        h(Mail, { size: 20, key: 'mail' }),
-                                        'Odeslat poptávku'
-                                    ]
-                                )
+                            h('button', {
+                                onClick: handleSubmit,
+                                disabled: isSubmitting,
+                                className: 'w-full bg-rentmil-gradient text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-lg'
+                            },
+                                isSubmitting ? [
+                                    h(Loader2, { size: 24, className: 'animate-spin', key: 'loader' }),
+                                    'Odesílám...'
+                                ] : [
+                                    h(Mail, { size: 24, key: 'mail' }),
+                                    'Odeslat poptávku'
+                                ]
                             )
                         );
                     }
@@ -493,8 +471,20 @@
                     return null;
                 };
 
-                return h('div', { className: 'min-h-screen bg-gray-100 p-4' },
-                    h('div', { className: 'max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden' },
+                const canProgress = () => {
+                    const currentStep = steps[step].id;
+                    if (currentStep === 'shape') return config.shape !== null;
+                    if (currentStep === 'size') return config.size !== null;
+                    if (currentStep === 'depth') return config.shape === 'kruhovy' || config.depth !== null;
+                    if (currentStep === 'stairs') return config.stairs !== null;
+                    if (currentStep === 'filtration') return config.filtration !== null;
+                    if (currentStep === 'heating') return config.heating !== null;
+                    if (currentStep === 'cover') return config.cover !== null;
+                    return true;
+                };
+
+                return h('div', { className: 'min-h-screen p-4' },
+                    h('div', { className: 'max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden' },
                         h('div', { className: 'bg-white p-6 text-center border-b' },
                             h('img', { 
                                 src: 'https://raw.githubusercontent.com/nemecekpetr/rentmil-konfigurator/main/logo%20rentmil.png',
@@ -507,22 +497,29 @@
                             h('h1', { className: 'text-3xl font-bold' }, 'Konfigurátor bazénů'),
                             h('p', { className: 'text-white mt-2 opacity-90' }, 'Vy zenujete, my bazénujeme')
                         ),
-                        h('div', { className: 'bg-gray-100 px-8 py-4' },
-                            h('div', { className: 'flex justify-between mb-2' },
+                        h('div', { className: 'bg-gray-50 px-8 py-6' },
+                            h('div', { className: 'flex justify-between items-center mb-2' },
                                 steps.map((s, idx) =>
-                                    h('div', { key: s.id, className: 'flex items-center' },
+                                    h('div', { key: s.id, className: 'flex items-center flex-1' },
                                         h('div', {
-                                            className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                                idx <= step ? 'bg-rentmil-water text-white' : 'bg-gray-300 text-gray-600'
+                                            onClick: () => {
+                                                if (idx < step) setStep(idx);
+                                            },
+                                            className: `w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                                                idx === step ? 'bg-rentmil-orange text-white scale-110' :
+                                                idx < step ? 'bg-rentmil-water text-white cursor-pointer hover:scale-105' : 
+                                                'bg-gray-300 text-gray-600'
                                             }`
-                                        }, idx < step ? h(Check, { size: 16 }) : idx + 1),
+                                        }, idx < step ? h(Check, { size: 18 }) : idx + 1),
                                         idx < steps.length - 1 && h('div', {
-                                            className: `h-1 w-8 ${idx < step ? 'bg-rentmil-water' : 'bg-gray-300'}`
+                                            className: `flex-1 h-1 mx-2 transition-all ${
+                                                idx < step ? 'bg-rentmil-water' : 'bg-gray-300'
+                                            }`
                                         })
                                     )
                                 )
                             ),
-                            h('div', { className: 'text-center text-sm text-gray-600' },
+                            h('div', { className: 'text-center text-sm font-semibold text-rentmil-blue mt-4' },
                                 `Krok ${step + 1} z ${steps.length}: ${steps[step].title}`
                             )
                         ),
@@ -530,11 +527,11 @@
                             h('h2', { className: 'text-2xl font-bold mb-6 text-rentmil-blue' }, steps[step].title),
                             renderStep()
                         ),
-                        h('div', { className: 'bg-gray-50 px-8 py-6 flex justify-between border-t' },
+                        step < steps.length - 1 && h('div', { className: 'bg-gray-50 px-8 py-6 flex justify-between items-center border-t' },
                             h('button', {
                                 onClick: () => setStep(Math.max(0, step - 1)),
                                 disabled: step === 0,
-                                className: 'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold disabled:opacity-50 hover:bg-gray-200 transition-colors text-rentmil-blue'
+                                className: 'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors text-rentmil-blue'
                             },
                                 h(ChevronLeft, { size: 20 }),
                                 'Zpět'
@@ -542,15 +539,25 @@
                             h('div', { className: 'text-center' },
                                 h('div', { className: 'text-sm text-gray-600' }, 'Aktuální cena'),
                                 h('div', { className: 'text-2xl font-bold text-rentmil-orange' },
-                                    `${calculateTotal().toLocaleString('cs-CZ')} Kč`
+                                    `${calculateTotal().toLocaleString('cs-CZ')} Kč s DPH`
                                 )
                             ),
                             h('button', {
                                 onClick: () => setStep(Math.min(steps.length - 1, step + 1)),
-                                className: 'flex items-center gap-2 bg-rentmil-gradient text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all'
+                                disabled: !canProgress(),
+                                className: 'flex items-center gap-2 bg-rentmil-orange text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
                             },
                                 'Další',
                                 h(ChevronRight, { size: 20 })
+                            )
+                        ),
+                        step === steps.length - 1 && h('div', { className: 'bg-gray-50 px-8 py-6 border-t' },
+                            h('button', {
+                                onClick: () => setStep(step - 1),
+                                className: 'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-rentmil-blue'
+                            },
+                                h(ChevronLeft, { size: 20 }),
+                                'Zpět'
                             )
                         )
                     )
