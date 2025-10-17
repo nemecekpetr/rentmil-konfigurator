@@ -149,6 +149,10 @@
                     return [];
                 };
 
+                const formatPrice = (price) => {
+                    return price.toLocaleString('cs-CZ').replace(/\s/g, '.') + ' Kč';
+                };
+
                 const calculateTotal = () => {
                     let total = 0;
                     const sizes = getCurrentSizes();
@@ -194,6 +198,7 @@
 
                     try {
                         const totalVAT = calculateTotal();
+                        const totalWithoutVAT = Math.round(totalVAT / 1.21);
                         
                         const formData = {
                             datum: new Date().toLocaleString('cs-CZ'),
@@ -209,7 +214,8 @@
                             ohrev: heating.find(h => h.id === config.heating)?.name || 'Neurčeno',
                             zastreseni: covers.find(c => c.id === config.cover)?.name || 'Neurčeno',
                             doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné',
-                            cena_s_dph: `${totalVAT.toLocaleString('cs-CZ')} Kč`
+                            cena_bez_dph: formatPrice(totalWithoutVAT),
+                            cena_s_dph: formatPrice(totalVAT)
                         };
 
                         const response = await fetch(WEBHOOK_URL, {
@@ -251,20 +257,23 @@
 
                     if (currentStep === 'size') {
                         const sizes = getCurrentSizes();
-                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
-                            sizes.map(size =>
-                                h('div', {
-                                    key: size.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, size: size.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.size === size.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    size.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-center text-rentmil-blue mt-2' }, size.name),
-                                    h('div', { className: 'text-rentmil-orange text-center font-semibold' }, `${Math.round(size.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH`)
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                                sizes.map(size =>
+                                    h('div', {
+                                        key: size.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, size: size.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.size === size.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        size.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
+                                        h('div', { className: 'text-lg font-bold text-center text-rentmil-blue mt-2' }, size.name),
+                                        h('div', { className: 'text-rentmil-orange text-center font-semibold' }, formatPrice(size.price))
+                                    )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
@@ -278,129 +287,147 @@
                                 }, 'Pokračovat')
                             );
                         }
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            depths.map(depth =>
-                                h('div', {
-                                    key: depth.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, depth: depth.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    depth.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-3xl font-bold text-center mb-2 text-rentmil-blue' }, depth.name),
-                                    h('div', { className: 'text-rentmil-orange text-center font-semibold' },
-                                        depth.priceAdd > 0 ? `+${Math.round(depth.priceAdd * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                                depths.map(depth =>
+                                    h('div', {
+                                        key: depth.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, depth: depth.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        depth.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                        h('div', { className: 'text-3xl font-bold text-center mb-2 text-rentmil-blue' }, depth.name),
+                                        h('div', { className: 'text-rentmil-orange text-center font-semibold' },
+                                            depth.priceAdd > 0 ? `+${formatPrice(depth.priceAdd)}` : 'v ceně'
+                                        )
                                     )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
                     if (currentStep === 'stairs') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            stairs.map(stair =>
-                                h('div', {
-                                    key: stair.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
-                                    h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        stair.price > 0 ? `+${Math.round(stair.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                                stairs.map(stair =>
+                                    h('div', {
+                                        key: stair.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
+                                        h('div', { className: 'text-rentmil-orange font-semibold' },
+                                            stair.price > 0 ? `+${formatPrice(stair.price)}` : 'v ceně'
+                                        )
                                     )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
                     if (currentStep === 'filtration') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            filtrations.map(filt =>
-                                h('div', {
-                                    key: filt.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, filt.name),
-                                    h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        filt.price > 0 ? `+${Math.round(filt.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                                filtrations.map(filt =>
+                                    h('div', {
+                                        key: filt.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, filt.name),
+                                        h('div', { className: 'text-rentmil-orange font-semibold' },
+                                            filt.price > 0 ? `+${formatPrice(filt.price)}` : '—'
+                                        )
                                     )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
                     if (currentStep === 'heating') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            heating.map(heat =>
-                                h('div', {
-                                    key: heat.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, heat.name),
-                                    h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        heat.price > 0 ? `+${Math.round(heat.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                                heating.map(heat =>
+                                    h('div', {
+                                        key: heat.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, heat.name),
+                                        h('div', { className: 'text-rentmil-orange font-semibold' },
+                                            heat.price > 0 ? `+${formatPrice(heat.price)}` : '—'
+                                        )
                                     )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 12%')
                         );
                     }
 
                     if (currentStep === 'cover') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            covers.map(cover =>
-                                h('div', {
-                                    key: cover.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
-                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, cover.name),
-                                    h('div', { className: 'text-rentmil-orange font-semibold' },
-                                        cover.price > 0 ? `+${Math.round(cover.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                                covers.map(cover =>
+                                    h('div', {
+                                        key: cover.id,
+                                        onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
+                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
+                                    },
+                                        cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, cover.name),
+                                        h('div', { className: 'text-rentmil-orange font-semibold' },
+                                            cover.price > 0 ? `+${formatPrice(cover.price)}` : '—'
+                                        )
                                     )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
                     if (currentStep === 'extras') {
-                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
-                            extras.map(extra =>
-                                h('div', {
-                                    key: extra.id,
-                                    onClick: () => {
-                                        setConfig(prev => ({
-                                            ...prev,
-                                            extras: prev.extras.includes(extra.id)
-                                                ? prev.extras.filter(id => id !== extra.id)
-                                                : [...prev.extras, extra.id]
-                                        }));
+                        return h('div', null,
+                            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                                extras.map(extra =>
+                                    h('div', {
+                                        key: extra.id,
+                                        onClick: () => {
+                                            setConfig(prev => ({
+                                                ...prev,
+                                                extras: prev.extras.includes(extra.id)
+                                                    ? prev.extras.filter(id => id !== extra.id)
+                                                    : [...prev.extras, extra.id]
+                                            }));
+                                        },
+                                        className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                            config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        }`
                                     },
-                                    className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
-                                        h(Check, { size: 20, className: 'text-rentmil-water' })
-                                    ),
-                                    h('div', { className: 'font-semibold text-sm mb-2 text-rentmil-blue' }, extra.name),
-                                    h('div', { className: 'text-rentmil-orange text-sm font-semibold' }, `+${Math.round(extra.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH`)
+                                        config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
+                                            h(Check, { size: 20, className: 'text-rentmil-water' })
+                                        ),
+                                        h('div', { className: 'font-semibold text-sm mb-2 text-rentmil-blue' }, extra.name),
+                                        h('div', { className: 'text-rentmil-orange text-sm font-semibold' }, `+${formatPrice(extra.price)}`)
+                                    )
                                 )
-                            )
+                            ),
+                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21%')
                         );
                     }
 
@@ -530,8 +557,8 @@
                             h('div', { className: 'bg-green-50 border-2 border-green-500 p-6 rounded-xl' },
                                 h('div', { className: 'text-center' },
                                     h('div', { className: 'text-sm text-gray-600 mb-2' }, 'Celková cena'),
-                                    h('div', { className: 'text-4xl font-bold text-green-600' }, `${total.toLocaleString('cs-CZ')} Kč`),
-                                    h('div', { className: 'text-sm text-gray-600' }, 's DPH')
+                                    h('div', { className: 'text-4xl font-bold text-green-600' }, formatPrice(Math.round(calculateTotal() / 1.21))),
+                                    h('div', { className: 'text-sm text-gray-600 mt-1' }, 'bez DPH')
                                 )
                             ),
                             submitStatus === 'success' && h('div', { className: 'bg-green-50 border-2 border-green-500 text-green-800 p-4 rounded-xl' },
@@ -635,8 +662,9 @@
                             h('div', { className: 'text-center' },
                                 h('div', { className: 'text-sm text-gray-600' }, 'Aktuální cena'),
                                 h('div', { className: 'text-2xl font-bold text-rentmil-orange' },
-                                    `${calculateTotal().toLocaleString('cs-CZ')} Kč s DPH`
-                                )
+                                    formatPrice(Math.round(calculateTotal() / 1.21))
+                                ),
+                                h('p', { className: 'text-xs text-gray-500 mt-1' }, 'bez DPH')
                             ),
                             h('button', {
                                 onClick: () => setStep(Math.min(steps.length - 1, step + 1)),
