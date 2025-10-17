@@ -71,6 +71,10 @@
                     shape: null, size: null, depth: null, stairs: null,
                     filtration: null, heating: null, cover: null, extras: []
                 });
+                
+                const [contactData, setContactData] = useState({
+                    name: '', email: '', phone: '', address: ''
+                });
 
                 const WEBHOOK_URL = 'https://hook.eu1.make.com/nsc9znumlgq7e37uigodxxnmlyckxwn9';
 
@@ -83,6 +87,7 @@
                     { id: 'heating', title: 'Ohřev' },
                     { id: 'cover', title: 'Zastřešení' },
                     { id: 'extras', title: 'Doplňky' },
+                    { id: 'contact', title: 'Kontaktní údaje' },
                     { id: 'summary', title: 'Shrnutí' }
                 ];
 
@@ -192,6 +197,10 @@
                         
                         const formData = {
                             datum: new Date().toLocaleString('cs-CZ'),
+                            jmeno: contactData.name,
+                            email: contactData.email,
+                            telefon: contactData.phone,
+                            adresa: contactData.address || 'Neuvedeno',
                             tvar: shapes.find(s => s.id === config.shape)?.name || '',
                             rozmery: getCurrentSizes().find(s => s.id === config.size)?.name || '',
                             hloubka: config.depth ? depths.find(d => d.id === config.depth)?.name : 'V ceně (kruhový)',
@@ -395,17 +404,94 @@
                         );
                     }
 
+                    if (currentStep === 'contact') {
+                        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactData.email);
+                        const isPhoneValid = /^[\d\s+()-]{9,}$/.test(contactData.phone);
+                        
+                        return h('div', { className: 'max-w-2xl mx-auto' },
+                            h('div', { className: 'bg-white rounded-xl p-8 space-y-6' },
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Celé jméno *'),
+                                    h('input', {
+                                        type: 'text',
+                                        value: contactData.name,
+                                        onChange: (e) => setContactData({...contactData, name: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: 'Jan Novák',
+                                        required: true
+                                    })
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Email *'),
+                                    h('input', {
+                                        type: 'email',
+                                        value: contactData.email,
+                                        onChange: (e) => setContactData({...contactData, email: e.target.value}),
+                                        className: `w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
+                                            contactData.email && !isEmailValid ? 'border-red-500' : 'border-gray-300 focus:border-rentmil-water'
+                                        }`,
+                                        placeholder: 'jan.novak@email.cz',
+                                        required: true
+                                    }),
+                                    contactData.email && !isEmailValid && 
+                                        h('p', { className: 'text-sm text-red-600' }, '⚠️ Zadejte platný email (např. jmeno@domena.cz)')
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Telefon *'),
+                                    h('input', {
+                                        type: 'tel',
+                                        value: contactData.phone,
+                                        onChange: (e) => setContactData({...contactData, phone: e.target.value}),
+                                        className: `w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
+                                            contactData.phone && !isPhoneValid ? 'border-red-500' : 'border-gray-300 focus:border-rentmil-water'
+                                        }`,
+                                        placeholder: '+420 123 456 789',
+                                        required: true
+                                    }),
+                                    contactData.phone && !isPhoneValid && 
+                                        h('p', { className: 'text-sm text-red-600' }, '⚠️ Zadejte platné telefonní číslo (min. 9 číslic)')
+                                ),
+                                h('div', { className: 'space-y-2' },
+                                    h('label', { className: 'block text-sm font-semibold text-rentmil-blue' }, 'Adresa instalace'),
+                                    h('input', {
+                                        type: 'text',
+                                        value: contactData.address,
+                                        onChange: (e) => setContactData({...contactData, address: e.target.value}),
+                                        className: 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-rentmil-water focus:outline-none transition-colors',
+                                        placeholder: 'Ulice 123, Praha 1'
+                                    })
+                                )
+                            )
+                        );
+                    }
+
                     if (currentStep === 'summary') {
                         const total = calculateTotal();
                         
                         return h('div', { className: 'space-y-6' },
-                            h('div', { className: 'bg-rentmil-gradient text-white p-8 rounded-xl shadow-xl' },
-                                h('h2', { className: 'text-2xl font-bold mb-4' }, 'Vaše konfigurace'),
-                                h('div', { className: 'text-5xl font-bold mb-2' }, `${total.toLocaleString('cs-CZ')} Kč`),
-                                h('div', { className: 'text-lg opacity-90' }, 's DPH')
+                            h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
+                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Kontaktní údaje:'),
+                                h('div', { className: 'space-y-3' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Jméno:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Email:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.email)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Telefon:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.phone)
+                                    ),
+                                    contactData.address && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Adresa:'),
+                                        h('span', { className: 'text-gray-700' }, contactData.address)
+                                    )
+                                )
                             ),
                             h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
-                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Souhrn:'),
+                                h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Konfigurace bazénu:'),
                                 h('div', { className: 'space-y-3' },
                                     h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Tvar:'),
@@ -441,6 +527,13 @@
                                     )
                                 )
                             ),
+                            h('div', { className: 'bg-green-50 border-2 border-green-500 p-6 rounded-xl' },
+                                h('div', { className: 'text-center' },
+                                    h('div', { className: 'text-sm text-gray-600 mb-2' }, 'Celková cena'),
+                                    h('div', { className: 'text-4xl font-bold text-green-600' }, `${total.toLocaleString('cs-CZ')} Kč`),
+                                    h('div', { className: 'text-sm text-gray-600' }, 's DPH')
+                                )
+                            ),
                             submitStatus === 'success' && h('div', { className: 'bg-green-50 border-2 border-green-500 text-green-800 p-4 rounded-xl' },
                                 h('div', { className: 'flex items-center gap-2' },
                                     h(Check, { size: 24 }),
@@ -453,7 +546,7 @@
                             h('button', {
                                 onClick: handleSubmit,
                                 disabled: isSubmitting,
-                                className: 'w-full bg-rentmil-gradient text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-lg'
+                                className: 'w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg text-lg'
                             },
                                 isSubmitting ? [
                                     h(Loader2, { size: 24, className: 'animate-spin', key: 'loader' }),
@@ -478,6 +571,11 @@
                     if (currentStep === 'filtration') return config.filtration !== null;
                     if (currentStep === 'heating') return config.heating !== null;
                     if (currentStep === 'cover') return config.cover !== null;
+                    if (currentStep === 'contact') {
+                        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactData.email);
+                        const isPhoneValid = /^[\d\s+()-]{9,}$/.test(contactData.phone);
+                        return contactData.name && isEmailValid && isPhoneValid;
+                    }
                     return true;
                 };
 
