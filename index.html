@@ -23,9 +23,7 @@
         .bg-rentmil-orange { background-color: #FF8621; }
         .bg-rentmil-gradient { background: linear-gradient(180deg, #48A9A6 0%, #01384B 100%); }
         .text-rentmil-blue { color: #01384B; }
-        .text-rentmil-water { color: #48A9A6; }
         .text-rentmil-orange { color: #FF8621; }
-        .border-rentmil-water { border-color: #48A9A6; }
     </style>
 </head>
 <body>
@@ -90,31 +88,29 @@
 
                 const shapes = [
                     { id: 'obdelnik', name: 'Obdélníkový', icon: '▭' },
-                    { id: 'rohovy', name: 'Rohový', icon: '▢', popular: true },
                     { id: 'kruhovy', name: 'Kruhový', icon: '●' }
                 ];
 
                 const sizesObdelnik = [
-                    { id: '5x2', name: '5 × 2 m', price: 30500 },
-                    { id: '6x3', name: '6 × 3 m', price: 44500, popular: true },
+                    { id: '5x3', name: '5 × 3 m', price: 38000 },
+                    { id: '6x3', name: '6 × 3 m', price: 44500 },
+                    { id: '7x3', name: '7 × 3 m', price: 51000 },
+                    { id: '5x3.5', name: '5 × 3,5 m', price: 44000 },
+                    { id: '6x3.5', name: '6 × 3,5 m', price: 52000, popular: true },
+                    { id: '7x3.5', name: '7 × 3,5 m', price: 59500 },
+                    { id: '6x4', name: '6 × 4 m', price: 58500 },
+                    { id: '7x4', name: '7 × 4 m', price: 68000 },
                     { id: '8x4', name: '8 × 4 m', price: 76500 }
                 ];
 
-                const sizesRohovy = [
-                    { id: '4x3', name: '4 × 3 m', price: 35500, popular: true },
-                    { id: '6x3', name: '6 × 3 m', price: 49000 },
-                    { id: '8x4', name: '8 × 4 m', price: 82500 }
-                ];
-
                 const sizesKruhovy = [
-                    { id: 'k3-1', name: 'Ø 3 m', price: 21000, popular: true },
+                    { id: 'k3-1.2', name: 'Ø 3 m', price: 23500, popular: true },
                     { id: 'k4-1.35', name: 'Ø 4 m', price: 41000 }
                 ];
 
                 const depths = [
-                    { id: '1.2', name: '1,2 m', priceAdd: 3000, popular: true },
-                    { id: '1.35', name: '1,35 m', priceAdd: 5000 },
-                    { id: '1.5', name: '1,5 m', priceAdd: 7000 }
+                    { id: '1.2', name: '1,2 m', priceAdd: 0, popular: true },
+                    { id: '1.5', name: '1,5 m', priceAdd: 8000 }
                 ];
 
                 const stairs = [
@@ -144,7 +140,6 @@
 
                 const getCurrentSizes = () => {
                     if (config.shape === 'obdelnik') return sizesObdelnik;
-                    if (config.shape === 'rohovy') return sizesRohovy;
                     if (config.shape === 'kruhovy') return sizesKruhovy;
                     return [];
                 };
@@ -229,7 +224,7 @@
                     const currentStep = steps[step].id;
 
                     if (currentStep === 'shape') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
                             shapes.map(shape =>
                                 h('div', {
                                     key: shape.id,
@@ -238,7 +233,6 @@
                                         config.shape === shape.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    shape.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
                                     h('div', { className: 'text-6xl text-center my-4' }, shape.icon),
                                     h('h3', { className: 'text-xl font-bold text-center text-rentmil-blue' }, shape.name)
                                 )
@@ -258,7 +252,7 @@
                                     }`
                                 },
                                     size.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-center text-rentmil-blue' }, size.name),
+                                    h('div', { className: 'text-lg font-bold text-center text-rentmil-blue mt-2' }, size.name),
                                     h('div', { className: 'text-rentmil-orange text-center font-semibold' }, `${Math.round(size.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH`)
                                 )
                             )
@@ -275,7 +269,7 @@
                                 }, 'Pokračovat')
                             );
                         }
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
                             depths.map(depth =>
                                 h('div', {
                                     key: depth.id,
@@ -284,6 +278,7 @@
                                         config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
+                                    depth.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
                                     h('div', { className: 'text-3xl font-bold text-center mb-2 text-rentmil-blue' }, depth.name),
                                     h('div', { className: 'text-rentmil-orange text-center font-semibold' },
                                         depth.priceAdd > 0 ? `+${Math.round(depth.priceAdd * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
@@ -303,6 +298,7 @@
                                         config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
+                                    stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
                                         stair.price > 0 ? `+${Math.round(stair.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : 'v ceně'
@@ -322,6 +318,7 @@
                                         config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
+                                    filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, filt.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
                                         filt.price > 0 ? `+${Math.round(filt.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
@@ -341,6 +338,7 @@
                                         config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
+                                    heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, heat.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
                                         heat.price > 0 ? `+${Math.round(heat.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
@@ -360,6 +358,7 @@
                                         config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
+                                    cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
                                     h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, cover.name),
                                     h('div', { className: 'text-rentmil-orange font-semibold' },
                                         cover.price > 0 ? `+${Math.round(cover.price * 1.21).toLocaleString('cs-CZ')} Kč s DPH` : '—'
