@@ -68,8 +68,17 @@
                 const [submitStatus, setSubmitStatus] = useState(null);
                 
                 const [config, setConfig] = useState({
-                    shape: null, size: null, depth: null, stairs: null,
-                    filtration: null, heating: null, cover: null, extras: []
+                    shape: null, // kruhovy, obdelnik-ovalne, obdelnik-ostre
+                    poolType: null, // skimmerovy, przelivovy
+                    width: null, // pro obdélníkové
+                    length: null, // pro obdélníkové
+                    diameter: null, // pro kruhové
+                    depth: null,
+                    stairs: null,
+                    filtration: null,
+                    heating: null,
+                    cover: null,
+                    extras: []
                 });
                 
                 const [contactData, setContactData] = useState({
@@ -80,8 +89,8 @@
 
                 const steps = [
                     { id: 'shape', title: 'Tvar bazénu' },
-                    { id: 'size', title: 'Rozměry' },
-                    { id: 'depth', title: 'Hloubka' },
+                    { id: 'poolType', title: 'Typ bazénu' },
+                    { id: 'dimensions', title: 'Rozměry' },
                     { id: 'stairs', title: 'Schodiště' },
                     { id: 'filtration', title: 'Filtrace' },
                     { id: 'heating', title: 'Ohřev' },
@@ -91,115 +100,129 @@
                     { id: 'summary', title: 'Shrnutí' }
                 ];
 
+                // Krok 1: Tvary bazénů
                 const shapes = [
-                    { id: 'obdelnik', name: 'Obdélníkový', icon: '▭' },
-                    { id: 'kruhovy', name: 'Kruhový', icon: '●' }
+                    {
+                        id: 'kruhovy',
+                        name: 'Kruhový',
+                        svg: `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="40" fill="#48A9A6" opacity="0.2"/>
+                        </svg>`
+                    },
+                    {
+                        id: 'obdelnik-ovalne',
+                        name: 'Obdélník s oválnými rohy',
+                        svg: `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="10" ry="10" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="10" ry="10" fill="#48A9A6" opacity="0.2"/>
+                        </svg>`
+                    },
+                    {
+                        id: 'obdelnik-ostre',
+                        name: 'Obdélník s ostrými rohy',
+                        svg: `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" fill="#48A9A6" opacity="0.2"/>
+                        </svg>`
+                    }
                 ];
 
-                const sizesObdelnik = [
-                    { id: '5x3', name: '5 × 3 m', price: 38000 },
-                    { id: '6x3', name: '6 × 3 m', price: 44500 },
-                    { id: '7x3', name: '7 × 3 m', price: 51000 },
-                    { id: '5x3.5', name: '5 × 3,5 m', price: 44000 },
-                    { id: '6x3.5', name: '6 × 3,5 m', price: 52000, popular: true },
-                    { id: '7x3.5', name: '7 × 3,5 m', price: 59500 },
-                    { id: '6x4', name: '6 × 4 m', price: 58500 },
-                    { id: '7x4', name: '7 × 4 m', price: 68000 },
-                    { id: '8x4', name: '8 × 4 m', price: 76500 }
+                // Krok 2: Typy bazénů
+                const poolTypes = [
+                    {
+                        id: 'skimmerovy',
+                        name: 'Skimmerový bazén',
+                        description: 'Klasický typ bazénu s hladinou vody cca 15 cm pod okrajem. Voda je nasávána povrchovými skimmery, což je ekonomické a nejrozšířenější řešení.'
+                    },
+                    {
+                        id: 'prelivovy',
+                        name: 'Přelivový bazén',
+                        description: 'Prémiový typ bazénu, kde voda přetéká přes okraj do přelivového žlabu. Vytváří efekt nekonečného bazénu a zajišťuje dokonalejší čištění hladiny.'
+                    }
                 ];
 
-                const sizesKruhovy = [
-                    { id: 'k3-1.2', name: 'Ø 3 m', price: 23500, popular: true },
-                    { id: 'k4-1.35', name: 'Ø 4 m', price: 41000 }
+                // Krok 3: Rozměry
+                const diameters = [
+                    { id: '1.5', name: '1,5 m' },
+                    { id: '2', name: '2 m' },
+                    { id: '2.5', name: '2,5 m' },
+                    { id: '3', name: '3 m' },
+                    { id: '3.5', name: '3,5 m' },
+                    { id: '4', name: '4 m' },
+                    { id: '4.5', name: '4,5 m' }
                 ];
 
-                const depths = [
-                    { id: '1.2', name: '1,2 m', priceAdd: 0, popular: true },
-                    { id: '1.5', name: '1,5 m', priceAdd: 8000 }
+                const widths = [
+                    { id: '2', name: '2 m' },
+                    { id: '2.5', name: '2,5 m' },
+                    { id: '3', name: '3 m' },
+                    { id: '3.5', name: '3,5 m' },
+                    { id: '4', name: '4 m' }
+                ];
+
+                const lengths = [
+                    { id: '4', name: '4 m' },
+                    { id: '5', name: '5 m' },
+                    { id: '6', name: '6 m' },
+                    { id: '7', name: '7 m' },
+                    { id: '8', name: '8 m' }
+                ];
+
+                const depthsCircular = [
+                    { id: '0.5', name: '0,5 m' },
+                    { id: '0.75', name: '0,75 m' },
+                    { id: '1', name: '1 m' },
+                    { id: '1.2', name: '1,2 m' },
+                    { id: '1.35', name: '1,35 m' },
+                    { id: '1.5', name: '1,5 m' }
+                ];
+
+                const depthsRectangular = [
+                    { id: '1.2', name: '1,2 m' },
+                    { id: '1.3', name: '1,3 m' },
+                    { id: '1.4', name: '1,4 m' },
+                    { id: '1.5', name: '1,5 m' }
                 ];
 
                 const stairs = [
-                    { id: 'rohove', name: 'Rohové schodiště', price: 0, popular: true },
-                    { id: 'rovne', name: 'Rovné schodiště', price: 8000 }
+                    { id: 'rohove', name: 'Rohové schodiště', popular: true },
+                    { id: 'rovne', name: 'Rovné schodiště' }
                 ];
 
                 const filtrations = [
-                    { id: 'none', name: 'Bez filtrace', price: 0 },
-                    { id: 'pisek6', name: 'Písková 6 m³/h', price: 15000, popular: true }
+                    { id: 'none', name: 'Bez filtrace' },
+                    { id: 'pisek6', name: 'Písková 6 m³/h', popular: true }
                 ];
 
                 const heating = [
-                    { id: 'none', name: 'Bez ohřevu', price: 0 },
-                    { id: 'tepelne-9kw', name: 'Tepelné čerpadlo 9 kW', price: 55000, popular: true }
+                    { id: 'none', name: 'Bez ohřevu' },
+                    { id: 'tepelne-9kw', name: 'Tepelné čerpadlo 9 kW', popular: true }
                 ];
 
                 const covers = [
-                    { id: 'none', name: 'Bez zastřešení', price: 0 },
-                    { id: 'nizke', name: 'Nízké zastřešení', price: 85000, popular: true }
+                    { id: 'none', name: 'Bez zastřešení' },
+                    { id: 'nizke', name: 'Nízké zastřešení', popular: true }
                 ];
 
                 const extras = [
-                    { id: 'protiproud', name: 'Protiproud', price: 28000 },
-                    { id: 'led', name: 'LED osvětlení', price: 6500 }
+                    { id: 'protiproud', name: 'Protiproud' },
+                    { id: 'led', name: 'LED osvětlení' }
                 ];
 
-                const getCurrentSizes = () => {
-                    if (config.shape === 'obdelnik') return sizesObdelnik;
-                    if (config.shape === 'kruhovy') return sizesKruhovy;
-                    return [];
-                };
-
-                const formatPrice = (price) => {
-                    return price.toLocaleString('cs-CZ').replace(/\s/g, '.') + ' Kč';
-                };
-
-                const calculateTotal = () => {
-                    let total = 0;
-                    const sizes = getCurrentSizes();
-                    const selectedSize = sizes.find(s => s.id === config.size);
-                    total += selectedSize?.price || 0;
-                    
-                    if (config.shape !== 'kruhovy' && config.depth) {
-                        const depth = depths.find(d => d.id === config.depth);
-                        total += depth?.priceAdd || 0;
-                    }
-                    
-                    if (config.stairs) {
-                        const stair = stairs.find(s => s.id === config.stairs);
-                        total += stair?.price || 0;
-                    }
-                    
-                    if (config.filtration) {
-                        const filt = filtrations.find(f => f.id === config.filtration);
-                        total += filt?.price || 0;
-                    }
-                    
-                    if (config.heating) {
-                        const heat = heating.find(h => h.id === config.heating);
-                        total += heat?.price || 0;
-                    }
-                    
-                    if (config.cover) {
-                        const cov = covers.find(c => c.id === config.cover);
-                        total += cov?.price || 0;
-                    }
-                    
-                    config.extras.forEach(extraId => {
-                        const extra = extras.find(e => e.id === extraId);
-                        total += extra?.price || 0;
-                    });
-                    
-                    return Math.round(total * 1.21);
-                };
 
                 const handleSubmit = async () => {
                     setIsSubmitting(true);
                     setSubmitStatus(null);
 
                     try {
-                        const totalVAT = calculateTotal();
-                        const totalWithoutVAT = Math.round(totalVAT / 1.21);
-                        
+                        let rozmery = '';
+                        if (config.shape === 'kruhovy') {
+                            rozmery = `Ø ${config.diameter} × ${config.depth}`;
+                        } else {
+                            rozmery = `${config.length} × ${config.width} × ${config.depth}`;
+                        }
+
                         const formData = {
                             datum: new Date().toLocaleString('cs-CZ'),
                             jmeno: contactData.name,
@@ -207,15 +230,13 @@
                             telefon: contactData.phone,
                             adresa: contactData.address || 'Neuvedeno',
                             tvar: shapes.find(s => s.id === config.shape)?.name || '',
-                            rozmery: getCurrentSizes().find(s => s.id === config.size)?.name || '',
-                            hloubka: config.depth ? depths.find(d => d.id === config.depth)?.name : 'V ceně (kruhový)',
+                            typ_bazenu: poolTypes.find(pt => pt.id === config.poolType)?.name || '',
+                            rozmery: rozmery,
                             schodiste: stairs.find(s => s.id === config.stairs)?.name || '',
                             filtrace: filtrations.find(f => f.id === config.filtration)?.name || 'Neurčeno',
                             ohrev: heating.find(h => h.id === config.heating)?.name || 'Neurčeno',
                             zastreseni: covers.find(c => c.id === config.cover)?.name || 'Neurčeno',
-                            doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné',
-                            cena_bez_dph: formatPrice(totalWithoutVAT),
-                            cena_s_dph: formatPrice(totalVAT)
+                            doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné'
                         };
 
                         const response = await fetch(WEBHOOK_URL, {
@@ -226,7 +247,7 @@
 
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         setSubmitStatus('success');
-                        
+
                     } catch (error) {
                         console.error('Chyba:', error);
                         setSubmitStatus('error');
@@ -238,196 +259,235 @@
                 const renderStep = () => {
                     const currentStep = steps[step].id;
 
+                    // Krok 1: Výběr tvaru bazénu
                     if (currentStep === 'shape') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
                             shapes.map(shape =>
                                 h('div', {
                                     key: shape.id,
                                     onClick: () => setConfig(prev => ({ ...prev, shape: shape.id })),
-                                    className: `p-8 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
                                         config.shape === shape.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    h('div', { className: 'text-6xl text-center my-4' }, shape.icon),
-                                    h('h3', { className: 'text-xl font-bold text-center text-rentmil-blue' }, shape.name)
+                                    h('div', {
+                                        className: 'mb-4',
+                                        dangerouslySetInnerHTML: { __html: shape.svg }
+                                    }),
+                                    h('h3', { className: 'text-lg font-bold text-center text-rentmil-blue' }, shape.name)
                                 )
                             )
                         );
                     }
 
-                    if (currentStep === 'size') {
-                        const sizes = getCurrentSizes();
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
-                                sizes.map(size =>
-                                    h('div', {
-                                        key: size.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, size: size.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.size === size.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        size.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded' }, 'TOP'),
-                                        h('div', { className: 'text-lg font-bold text-center text-rentmil-blue mt-2' }, size.name),
-                                        h('div', { className: 'text-rentmil-orange text-center font-semibold' }, formatPrice(size.price))
-                                    )
+                    // Krok 2: Výběr typu bazénu
+                    if (currentStep === 'poolType') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            poolTypes.map(type =>
+                                h('div', {
+                                    key: type.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, poolType: type.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.poolType === type.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    h('h3', { className: 'text-xl font-bold mb-3 text-rentmil-blue' }, type.name),
+                                    h('p', { className: 'text-gray-700 text-sm leading-relaxed' }, type.description)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
-                    if (currentStep === 'depth') {
+                    // Krok 3: Rozměry
+                    if (currentStep === 'dimensions') {
+                        // Pro kruhové bazény: průměr × hloubka
                         if (config.shape === 'kruhovy') {
-                            return h('div', { className: 'text-center py-12' },
-                                h('p', { className: 'text-lg mb-4 text-white' }, 'U kruhových bazénů je hloubka v ceně.'),
-                                h('button', {
-                                    onClick: () => setStep(step + 1),
-                                    className: 'bg-rentmil-orange text-white px-8 py-3 rounded-lg hover:opacity-90 transition-all font-semibold'
-                                }, 'Pokračovat')
-                            );
-                        }
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                                depths.map(depth =>
-                                    h('div', {
-                                        key: depth.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, depth: depth.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.depth === depth.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        depth.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                        h('div', { className: 'text-3xl font-bold text-center mb-2 text-rentmil-blue' }, depth.name),
-                                        h('div', { className: 'text-rentmil-orange text-center font-semibold' },
-                                            depth.priceAdd > 0 ? `+${formatPrice(depth.priceAdd)}` : 'v ceně'
+                            return h('div', { className: 'space-y-8' },
+                                h('div', null,
+                                    h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue' }, 'Průměr bazénu'),
+                                    h('div', { className: 'grid grid-cols-3 md:grid-cols-7 gap-3' },
+                                        diameters.map(diam =>
+                                            h('div', {
+                                                key: diam.id,
+                                                onClick: () => setConfig(prev => ({ ...prev, diameter: diam.name })),
+                                                className: `p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md text-center ${
+                                                    config.diameter === diam.name ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                                }`
+                                            },
+                                                h('div', { className: 'font-bold text-rentmil-blue' }, diam.name)
+                                            )
+                                        )
+                                    )
+                                ),
+                                h('div', null,
+                                    h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue' }, 'Hloubka bazénu'),
+                                    h('div', { className: 'grid grid-cols-3 md:grid-cols-6 gap-3' },
+                                        depthsCircular.map(depth =>
+                                            h('div', {
+                                                key: depth.id,
+                                                onClick: () => setConfig(prev => ({ ...prev, depth: depth.name })),
+                                                className: `p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md text-center ${
+                                                    config.depth === depth.name ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                                }`
+                                            },
+                                                h('div', { className: 'font-bold text-rentmil-blue' }, depth.name)
+                                            )
                                         )
                                     )
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            );
+                        }
+
+                        // Pro obdélníkové bazény (oba typy): šířka × délka × hloubka
+                        if (config.shape === 'obdelnik-ovalne' || config.shape === 'obdelnik-ostre') {
+                            return h('div', { className: 'space-y-8' },
+                                h('div', null,
+                                    h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue' }, 'Šířka bazénu'),
+                                    h('div', { className: 'grid grid-cols-3 md:grid-cols-5 gap-3' },
+                                        widths.map(width =>
+                                            h('div', {
+                                                key: width.id,
+                                                onClick: () => setConfig(prev => ({ ...prev, width: width.name })),
+                                                className: `p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md text-center ${
+                                                    config.width === width.name ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                                }`
+                                            },
+                                                h('div', { className: 'font-bold text-rentmil-blue' }, width.name)
+                                            )
+                                        )
+                                    )
+                                ),
+                                h('div', null,
+                                    h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue' }, 'Délka bazénu'),
+                                    h('div', { className: 'grid grid-cols-3 md:grid-cols-5 gap-3' },
+                                        lengths.map(length =>
+                                            h('div', {
+                                                key: length.id,
+                                                onClick: () => setConfig(prev => ({ ...prev, length: length.name })),
+                                                className: `p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md text-center ${
+                                                    config.length === length.name ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                                }`
+                                            },
+                                                h('div', { className: 'font-bold text-rentmil-blue' }, length.name)
+                                            )
+                                        )
+                                    )
+                                ),
+                                h('div', null,
+                                    h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue' }, 'Hloubka bazénu'),
+                                    h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+                                        depthsRectangular.map(depth =>
+                                            h('div', {
+                                                key: depth.id,
+                                                onClick: () => setConfig(prev => ({ ...prev, depth: depth.name })),
+                                                className: `p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md text-center ${
+                                                    config.depth === depth.name ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                                }`
+                                            },
+                                                h('div', { className: 'font-bold text-rentmil-blue' }, depth.name)
+                                            )
+                                        )
+                                    )
+                                )
+                            );
+                        }
+
+                        return h('div', { className: 'text-center py-12 text-white' },
+                            h('p', null, 'Prosím vyberte nejdříve tvar bazénu.')
                         );
                     }
 
                     if (currentStep === 'stairs') {
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                                stairs.map(stair =>
-                                    h('div', {
-                                        key: stair.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
-                                        h('div', { className: 'text-rentmil-orange font-semibold' },
-                                            stair.price > 0 ? `+${formatPrice(stair.price)}` : 'v ceně'
-                                        )
-                                    )
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            stairs.map(stair =>
+                                h('div', {
+                                    key: stair.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, stairs: stair.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, stair.name)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
                     if (currentStep === 'filtration') {
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                                filtrations.map(filt =>
-                                    h('div', {
-                                        key: filt.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, filt.name),
-                                        h('div', { className: 'text-rentmil-orange font-semibold' },
-                                            filt.price > 0 ? `+${formatPrice(filt.price)}` : '—'
-                                        )
-                                    )
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            filtrations.map(filt =>
+                                h('div', {
+                                    key: filt.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, filt.name)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
                     if (currentStep === 'heating') {
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                                heating.map(heat =>
-                                    h('div', {
-                                        key: heat.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, heat.name),
-                                        h('div', { className: 'text-rentmil-orange font-semibold' },
-                                            heat.price > 0 ? `+${formatPrice(heat.price)}` : '—'
-                                        )
-                                    )
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            heating.map(heat =>
+                                h('div', {
+                                    key: heat.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, heating: heat.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, heat.name)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
                     if (currentStep === 'cover') {
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                                covers.map(cover =>
-                                    h('div', {
-                                        key: cover.id,
-                                        onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
-                                        className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
-                                    },
-                                        cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                        h('div', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, cover.name),
-                                        h('div', { className: 'text-rentmil-orange font-semibold' },
-                                            cover.price > 0 ? `+${formatPrice(cover.price)}` : '—'
-                                        )
-                                    )
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            covers.map(cover =>
+                                h('div', {
+                                    key: cover.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, cover: cover.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
+                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, cover.name)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
                     if (currentStep === 'extras') {
-                        return h('div', null,
-                            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
-                                extras.map(extra =>
-                                    h('div', {
-                                        key: extra.id,
-                                        onClick: () => {
-                                            setConfig(prev => ({
-                                                ...prev,
-                                                extras: prev.extras.includes(extra.id)
-                                                    ? prev.extras.filter(id => id !== extra.id)
-                                                    : [...prev.extras, extra.id]
-                                            }));
-                                        },
-                                        className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                            config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                        }`
+                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
+                            extras.map(extra =>
+                                h('div', {
+                                    key: extra.id,
+                                    onClick: () => {
+                                        setConfig(prev => ({
+                                            ...prev,
+                                            extras: prev.extras.includes(extra.id)
+                                                ? prev.extras.filter(id => id !== extra.id)
+                                                : [...prev.extras, extra.id]
+                                        }));
                                     },
-                                        config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
-                                            h(Check, { size: 20, className: 'text-rentmil-water' })
-                                        ),
-                                        h('div', { className: 'font-semibold text-sm mb-2 text-rentmil-blue' }, extra.name),
-                                        h('div', { className: 'text-rentmil-orange text-sm font-semibold' }, `+${formatPrice(extra.price)}`)
-                                    )
+                                    className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
+                                        h(Check, { size: 20, className: 'text-rentmil-water' })
+                                    ),
+                                    h('div', { className: 'font-semibold text-rentmil-blue' }, extra.name)
                                 )
-                            ),
-                            h('p', { className: 'text-xs text-gray-500 text-center mt-4' }, '* Ceny jsou uvedeny bez DPH 21% nebo 12%')
+                            )
                         );
                     }
 
@@ -493,8 +553,13 @@
                     }
 
                     if (currentStep === 'summary') {
-                        const total = calculateTotal();
-                        
+                        let rozmerySummary = '';
+                        if (config.shape === 'kruhovy') {
+                            rozmerySummary = `Ø ${config.diameter} × ${config.depth}`;
+                        } else {
+                            rozmerySummary = `${config.length} × ${config.width} × ${config.depth}`;
+                        }
+
                         return h('div', { className: 'space-y-6' },
                             h('div', { className: 'bg-white border-2 border-gray-200 p-6 rounded-xl shadow-lg' },
                                 h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, 'Kontaktní údaje:'),
@@ -525,12 +590,12 @@
                                         h('span', { className: 'text-gray-700' }, shapes.find(s => s.id === config.shape)?.name)
                                     ),
                                     h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
-                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Rozměry:'),
-                                        h('span', { className: 'text-gray-700' }, getCurrentSizes().find(s => s.id === config.size)?.name)
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Typ bazénu:'),
+                                        h('span', { className: 'text-gray-700' }, poolTypes.find(pt => pt.id === config.poolType)?.name)
                                     ),
-                                    config.depth && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
-                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Hloubka:'),
-                                        h('span', { className: 'text-gray-700' }, depths.find(d => d.id === config.depth)?.name)
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Rozměry:'),
+                                        h('span', { className: 'text-gray-700' }, rozmerySummary)
                                     ),
                                     h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Schodiště:'),
@@ -552,13 +617,6 @@
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Doplňky:'),
                                         h('span', { className: 'text-gray-700' }, config.extras.map(id => extras.find(e => e.id === id)?.name).join(', '))
                                     )
-                                )
-                            ),
-                            h('div', { className: 'bg-green-50 border-2 border-green-500 p-6 rounded-xl' },
-                                h('div', { className: 'text-center' },
-                                    h('div', { className: 'text-sm text-gray-600 mb-2' }, 'Celková cena'),
-                                    h('div', { className: 'text-4xl font-bold text-green-600' }, formatPrice(Math.round(calculateTotal() / 1.21))),
-                                    h('div', { className: 'text-sm text-gray-600 mt-1' }, 'bez DPH')
                                 )
                             ),
                             submitStatus === 'success' && h('div', { className: 'bg-green-50 border-2 border-green-500 text-green-800 p-4 rounded-xl' },
@@ -592,8 +650,13 @@
                 const canProgress = () => {
                     const currentStep = steps[step].id;
                     if (currentStep === 'shape') return config.shape !== null;
-                    if (currentStep === 'size') return config.size !== null;
-                    if (currentStep === 'depth') return config.shape === 'kruhovy' || config.depth !== null;
+                    if (currentStep === 'poolType') return config.poolType !== null;
+                    if (currentStep === 'dimensions') {
+                        if (config.shape === 'kruhovy') {
+                            return config.diameter !== null && config.depth !== null;
+                        }
+                        return config.width !== null && config.length !== null && config.depth !== null;
+                    }
                     if (currentStep === 'stairs') return config.stairs !== null;
                     if (currentStep === 'filtration') return config.filtration !== null;
                     if (currentStep === 'heating') return config.heating !== null;
@@ -658,13 +721,6 @@
                             },
                                 h(ChevronLeft, { size: 20 }),
                                 'Zpět'
-                            ),
-                            h('div', { className: 'text-center' },
-                                h('div', { className: 'text-sm text-gray-600' }, 'Aktuální cena'),
-                                h('div', { className: 'text-2xl font-bold text-rentmil-orange' },
-                                    formatPrice(Math.round(calculateTotal() / 1.21))
-                                ),
-                                h('p', { className: 'text-xs text-gray-500 mt-1' }, 'bez DPH')
                             ),
                             h('button', {
                                 onClick: () => setStep(Math.min(steps.length - 1, step + 1)),
