@@ -345,12 +345,14 @@
                     }
 
                     if (stairsId === 'romanske') {
+                        // Románské schodiště - zakulacené přes roh (pravý dolní roh)
+                        const cornerRadius = isRounded ? '10' : '0';
                         return `<svg viewBox="0 0 100 100" class="w-full h-32">
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
-                            <path d="M 15 40 Q 20 30 25 40 L 25 55 L 15 55 Z" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
-                            <line x1="15" y1="45" x2="25" y2="45" stroke="white" stroke-width="0.5"/>
-                            <line x1="15" y1="50" x2="25" y2="50" stroke="white" stroke-width="0.5"/>
+                            <path d="M 90 75 Q 85 70 80 75 L 80 60 Q 75 65 70 60 L 70 50 L 90 50 ${isRounded ? 'Q 90 65 90' : 'L 90'} 75 Z" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="75" y1="60" x2="90" y2="60" stroke="white" stroke-width="0.5"/>
+                            <line x1="80" y1="70" x2="90" y2="70" stroke="white" stroke-width="0.5"/>
                         </svg>`;
                     }
 
@@ -366,31 +368,39 @@
                     }
 
                     if (stairsId === 'cela-sirka') {
+                        // Schodiště přes celou šířku - na kratší straně (levá strana)
                         return `<svg viewBox="0 0 100 100" class="w-full h-32">
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
-                            <rect x="10" y="25" width="80" height="15" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
-                            <line x1="10" y1="30" x2="90" y2="30" stroke="white" stroke-width="0.5"/>
-                            <line x1="10" y1="35" x2="90" y2="35" stroke="white" stroke-width="0.5"/>
+                            <rect x="10" y="25" width="20" height="50" ${isRounded ? 'rx="10" ry="10"' : ''} fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="15" y1="25" x2="15" y2="75" stroke="white" stroke-width="0.5"/>
+                            <line x1="20" y1="25" x2="20" y2="75" stroke="white" stroke-width="0.5"/>
+                            <line x1="25" y1="25" x2="25" y2="75" stroke="white" stroke-width="0.5"/>
                         </svg>`;
                     }
 
                     if (stairsId === 'relaxacni-lavice') {
+                        // Schodiště s relaxační lavicí - na kratší straně, lavice u hrany bazénu
                         return `<svg viewBox="0 0 100 100" class="w-full h-32">
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
-                            <rect x="10" y="25" width="25" height="15" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
-                            <rect x="10" y="40" width="80" height="8" fill="#01384B" opacity="0.5" stroke="#01384B" stroke-width="1"/>
-                            <line x1="10" y1="30" x2="35" y2="30" stroke="white" stroke-width="0.5"/>
-                            <line x1="10" y1="35" x2="35" y2="35" stroke="white" stroke-width="0.5"/>
+                            <!-- Relaxační lavice u horní hrany bazénu (celá délka) -->
+                            <rect x="10" y="25" width="80" height="8" ${isRounded ? 'rx="10" ry="10"' : ''} fill="#01384B" opacity="0.6" stroke="#01384B" stroke-width="1"/>
+                            <!-- Schodiště na levé kratší straně -->
+                            <rect x="10" y="33" width="20" height="42" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="15" y1="33" x2="15" y2="75" stroke="white" stroke-width="0.5"/>
+                            <line x1="20" y1="33" x2="20" y2="75" stroke="white" stroke-width="0.5"/>
+                            <line x1="25" y1="33" x2="25" y2="75" stroke="white" stroke-width="0.5"/>
                         </svg>`;
                     }
 
                     if (stairsId === 'hranate-rohove') {
+                        // Hranaté rohové schodiště - u kratší strany (levý horní roh)
+                        // Pokud je bazén se zaoblenými rohy, schodiště má také zaoblený roh
                         return `<svg viewBox="0 0 100 100" class="w-full h-32">
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
                             <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
-                            <rect x="10" y="25" width="20" height="20" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <rect x="10" y="25" width="20" height="20" ${isRounded ? 'rx="10" ry="10"' : ''} fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
                             <line x1="10" y1="32" x2="30" y2="32" stroke="white" stroke-width="0.5"/>
                             <line x1="10" y1="38" x2="30" y2="38" stroke="white" stroke-width="0.5"/>
                         </svg>`;
