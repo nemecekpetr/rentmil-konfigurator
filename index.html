@@ -74,11 +74,14 @@
                     length: null, // pro obdélníkové
                     diameter: null, // pro kruhové
                     depth: null,
+                    color: null, // modra, bila, sediva, kombinace
                     stairs: null,
-                    filtration: null,
+                    technology: null,
+                    lighting: null,
+                    countercurrent: null,
+                    waterTreatment: null,
                     heating: null,
-                    cover: null,
-                    extras: []
+                    cover: null
                 });
                 
                 const [contactData, setContactData] = useState({
@@ -91,11 +94,12 @@
                     { id: 'shape', title: 'Tvar bazénu' },
                     { id: 'poolType', title: 'Typ bazénu' },
                     { id: 'dimensions', title: 'Rozměry' },
+                    { id: 'color', title: 'Barva' },
                     { id: 'stairs', title: 'Schodiště' },
-                    { id: 'filtration', title: 'Filtrace' },
-                    { id: 'heating', title: 'Ohřev' },
+                    { id: 'technology', title: 'Technologie' },
+                    { id: 'accessories', title: 'Příslušenství' },
+                    { id: 'heating', title: 'Ohřev vody' },
                     { id: 'cover', title: 'Zastřešení' },
-                    { id: 'extras', title: 'Doplňky' },
                     { id: 'contact', title: 'Kontaktní údaje' },
                     { id: 'summary', title: 'Shrnutí' }
                 ];
@@ -185,31 +189,215 @@
                     { id: '1.5', name: '1,5 m' }
                 ];
 
+                // Krok 4: Barvy
+                const colors = [
+                    { id: 'modra', name: 'Modrá' },
+                    { id: 'bila', name: 'Bílá' },
+                    { id: 'sediva', name: 'Šedivá' },
+                    { id: 'kombinace', name: 'Kombinace barev', note: 'Barva dna a stěn může být nakombinována' }
+                ];
+
+                // Krok 5: Schodiště
                 const stairs = [
-                    { id: 'rohove', name: 'Rohové schodiště', popular: true },
-                    { id: 'rovne', name: 'Rovné schodiště' }
+                    {
+                        id: 'bez-schodiste',
+                        name: 'Bez schodiště',
+                        description: 'Bazén bez vestavěného schodiště, vstup pomocí vnějšího žebříku.'
+                    },
+                    {
+                        id: 'romanske',
+                        name: 'Románské schodiště',
+                        description: 'Elegantní půlkruhové schodiště s oblými tvary, ideální pro pohodlný vstup do bazénu.'
+                    },
+                    {
+                        id: 'trojuhelnikove',
+                        name: 'Trojúhelníkové schodiště přes roh',
+                        description: 'Kompaktní rohové řešení ve tvaru trojúhelníku, šetří prostor v bazénu.'
+                    },
+                    {
+                        id: 'cela-sirka',
+                        name: 'Schodiště přes celou šířku bazénu',
+                        description: 'Široké schodiště táhnoucí se přes celou šířku, vytváří relaxační zónu s možností posezení.'
+                    },
+                    {
+                        id: 'relaxacni-lavice',
+                        name: 'Schodiště s relaxační lavicí',
+                        description: 'Kombinace schodiště a vestavěné lavice pro odpočinek a relaxaci přímo ve vodě.'
+                    },
+                    {
+                        id: 'hranate-rohove',
+                        name: 'Hranaté rohové schodiště',
+                        description: 'Klasické rohové schodiště s pravoúhlými tvary, praktické a prostorově úsporné.'
+                    }
                 ];
 
-                const filtrations = [
-                    { id: 'none', name: 'Bez filtrace' },
-                    { id: 'pisek6', name: 'Písková 6 m³/h', popular: true }
+                // Krok 6: Technologie
+                const technologies = [
+                    {
+                        id: 'sachta',
+                        name: 'Technologická šachta',
+                        description: 'Kompaktní plastová šachta umístěná vedle bazénu, obsahuje veškeré technologické vybavení. Ideální řešení pro minimalizaci prostorových nároků.'
+                    },
+                    {
+                        id: 'stena',
+                        name: 'Technologická stěna',
+                        description: 'Technologie integrovaná přímo do stěny bazénu, šetří místo v okolí bazénu a vytváří elegantní vzhled.'
+                    },
+                    {
+                        id: 'jine',
+                        name: 'Jiné umístění',
+                        description: 'Technologie umístěná v zahradním domku, sklepě, technické místnosti nebo na jiném vhodném místě dle vašich potřeb.'
+                    }
                 ];
 
+                // Krok 7: Příslušenství - Osvětlení
+                const lightingOptions = [
+                    {
+                        id: 'bez-osvetleni',
+                        name: 'Bez osvětlení',
+                        description: 'Bazén bez vestavěného osvětlení.'
+                    },
+                    {
+                        id: 's-osvetlenim',
+                        name: 'S osvětlením',
+                        description: 'LED podvodní osvětlení vytváří příjemnou atmosféru a umožňuje bezpečné využití bazénu i po setmění.'
+                    }
+                ];
+
+                // Krok 7: Příslušenství - Protiproud
+                const countercurrentOptions = [
+                    {
+                        id: 'bez-protiproudu',
+                        name: 'Bez protiproudu',
+                        description: 'Bazén bez systému protiproudu.'
+                    },
+                    {
+                        id: 's-protiproudem',
+                        name: 'S protiproudem',
+                        description: 'Protiproud umožňuje plavání na místě, masáž a aqua fitness. Ideální pro menší bazény.'
+                    }
+                ];
+
+                // Krok 7: Příslušenství - Úprava vody
+                const waterTreatmentOptions = [
+                    {
+                        id: 'chlor',
+                        name: 'Chlorová úprava vody',
+                        description: 'Klasická a osvědčená metoda dezinfekce vody pomocí chlóru. Účinná a ekonomická.'
+                    },
+                    {
+                        id: 'sul',
+                        name: 'Slaná úprava vody',
+                        description: 'Moderní systém s elektrolýzou soli, šetrnější k pokožce a očím, příjemnější pocit při koupání.'
+                    }
+                ];
+
+                // Krok 8: Ohřev vody
                 const heating = [
-                    { id: 'none', name: 'Bez ohřevu' },
-                    { id: 'tepelne-9kw', name: 'Tepelné čerpadlo 9 kW', popular: true }
+                    {
+                        id: 'bez-ohrevu',
+                        name: 'Bez ohřevu',
+                        description: 'Bazén bez systému ohřevu vody, teplota závisí na slunečním záření.'
+                    },
+                    {
+                        id: 'priprava',
+                        name: 'Příprava odbočky na budoucí instalaci',
+                        description: 'Připravíme veškeré rozvody a odbočky pro snadnou instalaci ohřevu v budoucnu.'
+                    },
+                    {
+                        id: 'tepelne-cerpadlo',
+                        name: 'Instalace tepelného čerpadla',
+                        description: 'Kompletní instalace tepelného čerpadla pro efektivní ohřev vody a prodloužení koupací sezóny.'
+                    }
                 ];
 
+                // Krok 9: Zastřešení
                 const covers = [
-                    { id: 'none', name: 'Bez zastřešení' },
-                    { id: 'nizke', name: 'Nízké zastřešení', popular: true }
+                    {
+                        id: 'bez-zastreseni',
+                        name: 'Bez zastřešení',
+                        description: 'Bez zastřešení: Nižší pořizovací náklady, volný výhled do okolí, bazén otevřený živlům. Nevýhody: Větší znečištění, vyšší ztráty tepla, nutnost častější údržby.',
+                        pros: ['Nižší pořizovací náklady', 'Volný výhled do okolí', 'Bez vizuální bariéry'],
+                        cons: ['Větší znečištění listím a nečistotami', 'Vyšší ztráty tepla a odpařování', 'Nutnost častější údržby a čištění']
+                    },
+                    {
+                        id: 'se-zastresenim',
+                        name: 'Se zastřešením',
+                        description: 'Se zastřešením: Čistší voda, nižší provozní náklady na vytápění, prodloužení sezóny, ochrana před povětrnostními vlivy, bezpečnost (zejména pokud máte děti).',
+                        pros: ['Čistší voda - minimální znečištění', 'Nižší náklady na vytápění (až o 70%)', 'Prodloužení koupací sezóny', 'Ochrana před deštěm a listím', 'Vyšší bezpečnost pro děti']
+                    }
                 ];
 
-                const extras = [
-                    { id: 'protiproud', name: 'Protiproud' },
-                    { id: 'led', name: 'LED osvětlení' }
-                ];
 
+                // Pomocná funkce pro generování SVG schodišť
+                const getStairsSVG = (shapeId, stairsId) => {
+                    // Pro kruhový bazén - žádné schodiště (krok se přeskakuje)
+                    if (shapeId === 'kruhovy') return '';
+
+                    const isRounded = shapeId === 'obdelnik-ovalne';
+                    const rx = isRounded ? '10' : '0';
+
+                    if (stairsId === 'bez-schodiste') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                        </svg>`;
+                    }
+
+                    if (stairsId === 'romanske') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                            <path d="M 15 40 Q 20 30 25 40 L 25 55 L 15 55 Z" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="15" y1="45" x2="25" y2="45" stroke="white" stroke-width="0.5"/>
+                            <line x1="15" y1="50" x2="25" y2="50" stroke="white" stroke-width="0.5"/>
+                        </svg>`;
+                    }
+
+                    if (stairsId === 'trojuhelnikove') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                            <path d="M 10 25 L 25 25 L 10 45 Z" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="10" y1="30" x2="22" y2="30" stroke="white" stroke-width="0.5"/>
+                            <line x1="10" y1="35" x2="18" y2="35" stroke="white" stroke-width="0.5"/>
+                            <line x1="10" y1="40" x2="13" y2="40" stroke="white" stroke-width="0.5"/>
+                        </svg>`;
+                    }
+
+                    if (stairsId === 'cela-sirka') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                            <rect x="10" y="25" width="80" height="15" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="10" y1="30" x2="90" y2="30" stroke="white" stroke-width="0.5"/>
+                            <line x1="10" y1="35" x2="90" y2="35" stroke="white" stroke-width="0.5"/>
+                        </svg>`;
+                    }
+
+                    if (stairsId === 'relaxacni-lavice') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                            <rect x="10" y="25" width="25" height="15" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <rect x="10" y="40" width="80" height="8" fill="#01384B" opacity="0.5" stroke="#01384B" stroke-width="1"/>
+                            <line x1="10" y1="30" x2="35" y2="30" stroke="white" stroke-width="0.5"/>
+                            <line x1="10" y1="35" x2="35" y2="35" stroke="white" stroke-width="0.5"/>
+                        </svg>`;
+                    }
+
+                    if (stairsId === 'hranate-rohove') {
+                        return `<svg viewBox="0 0 100 100" class="w-full h-32">
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="none" stroke="#48A9A6" stroke-width="2"/>
+                            <rect x="10" y="25" width="80" height="50" rx="${rx}" ry="${rx}" fill="#48A9A6" opacity="0.2"/>
+                            <rect x="10" y="25" width="20" height="20" fill="#01384B" stroke="#01384B" stroke-width="1.5"/>
+                            <line x1="10" y1="32" x2="30" y2="32" stroke="white" stroke-width="0.5"/>
+                            <line x1="10" y1="38" x2="30" y2="38" stroke="white" stroke-width="0.5"/>
+                        </svg>`;
+                    }
+
+                    return '';
+                };
 
                 const handleSubmit = async () => {
                     setIsSubmitting(true);
@@ -232,11 +420,14 @@
                             tvar: shapes.find(s => s.id === config.shape)?.name || '',
                             typ_bazenu: poolTypes.find(pt => pt.id === config.poolType)?.name || '',
                             rozmery: rozmery,
-                            schodiste: stairs.find(s => s.id === config.stairs)?.name || '',
-                            filtrace: filtrations.find(f => f.id === config.filtration)?.name || 'Neurčeno',
-                            ohrev: heating.find(h => h.id === config.heating)?.name || 'Neurčeno',
-                            zastreseni: covers.find(c => c.id === config.cover)?.name || 'Neurčeno',
-                            doplnky: config.extras.map(id => extras.find(e => e.id === id)?.name).join(', ') || 'Žádné'
+                            barva: colors.find(c => c.id === config.color)?.name || '',
+                            schodiste: config.shape === 'kruhovy' ? 'Neaplikovatelné (kruhový bazén)' : (stairs.find(s => s.id === config.stairs)?.name || ''),
+                            technologie: technologies.find(t => t.id === config.technology)?.name || '',
+                            osvetleni: lightingOptions.find(l => l.id === config.lighting)?.name || '',
+                            protiproud: countercurrentOptions.find(c => c.id === config.countercurrent)?.name || '',
+                            uprava_vody: waterTreatmentOptions.find(w => w.id === config.waterTreatment)?.name || '',
+                            ohrev: heating.find(h => h.id === config.heating)?.name || '',
+                            zastreseni: covers.find(c => c.id === config.cover)?.name || ''
                         };
 
                         const response = await fetch(WEBHOOK_URL, {
@@ -293,6 +484,24 @@
                                 },
                                     h('h3', { className: 'text-xl font-bold mb-3 text-rentmil-blue' }, type.name),
                                     h('p', { className: 'text-gray-700 text-sm leading-relaxed' }, type.description)
+                                )
+                            )
+                        );
+                    }
+
+                    // Krok 4: Barva
+                    if (currentStep === 'color') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                            colors.map(color =>
+                                h('div', {
+                                    key: color.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, color: color.id })),
+                                    className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                        config.color === color.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                    }`
+                                },
+                                    h('h3', { className: 'text-xl font-bold mb-2 text-rentmil-blue' }, color.name),
+                                    color.note && h('p', { className: 'text-sm text-gray-600 italic mt-2' }, color.note)
                                 )
                             )
                         );
@@ -397,8 +606,19 @@
                         );
                     }
 
+                    // Krok 5: Schodiště (přeskočit u kruhového bazénu)
                     if (currentStep === 'stairs') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                        // Pro kruhový bazén - přeskočit tento krok
+                        if (config.shape === 'kruhovy') {
+                            return h('div', { className: 'text-center py-12' },
+                                h('div', { className: 'bg-blue-50 border-2 border-rentmil-water rounded-xl p-8 max-w-2xl mx-auto' },
+                                    h('h3', { className: 'text-xl font-bold text-rentmil-blue mb-3' }, 'Kruhový bazén'),
+                                    h('p', { className: 'text-gray-700' }, 'Pro kruhový bazén není volba schodiště k dispozici. Pokračujte na další krok.')
+                                )
+                            );
+                        }
+
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' },
                             stairs.map(stair =>
                                 h('div', {
                                     key: stair.id,
@@ -407,32 +627,38 @@
                                         config.stairs === stair.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    stair.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, stair.name)
+                                    h('div', {
+                                        className: 'mb-4',
+                                        dangerouslySetInnerHTML: { __html: getStairsSVG(config.shape, stair.id) }
+                                    }),
+                                    h('h3', { className: 'text-lg font-bold mb-2 text-rentmil-blue' }, stair.name),
+                                    h('p', { className: 'text-sm text-gray-600 leading-relaxed' }, stair.description)
                                 )
                             )
                         );
                     }
 
-                    if (currentStep === 'filtration') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
-                            filtrations.map(filt =>
+                    // Krok 6: Technologie
+                    if (currentStep === 'technology') {
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
+                            technologies.map(tech =>
                                 h('div', {
-                                    key: filt.id,
-                                    onClick: () => setConfig(prev => ({ ...prev, filtration: filt.id })),
+                                    key: tech.id,
+                                    onClick: () => setConfig(prev => ({ ...prev, technology: tech.id })),
                                     className: `p-6 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.filtration === filt.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                        config.technology === tech.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    filt.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, filt.name)
+                                    h('h3', { className: 'text-xl font-bold mb-3 text-rentmil-blue' }, tech.name),
+                                    h('p', { className: 'text-sm text-gray-700 leading-relaxed' }, tech.description)
                                 )
                             )
                         );
                     }
 
+                    // Krok 8: Ohřev vody
                     if (currentStep === 'heating') {
-                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+                        return h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
                             heating.map(heat =>
                                 h('div', {
                                     key: heat.id,
@@ -441,13 +667,14 @@
                                         config.heating === heat.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    heat.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, heat.name)
+                                    h('h3', { className: 'text-xl font-bold mb-3 text-rentmil-blue' }, heat.name),
+                                    h('p', { className: 'text-sm text-gray-700 leading-relaxed' }, heat.description)
                                 )
                             )
                         );
                     }
 
+                    // Krok 9: Zastřešení
                     if (currentStep === 'cover') {
                         return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
                             covers.map(cover =>
@@ -458,34 +685,89 @@
                                         config.cover === cover.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
                                     }`
                                 },
-                                    cover.popular && h('span', { className: 'text-xs bg-rentmil-orange text-white px-2 py-1 rounded mb-2 inline-block' }, 'TOP'),
-                                    h('div', { className: 'text-lg font-bold text-rentmil-blue' }, cover.name)
+                                    h('h3', { className: 'text-xl font-bold mb-4 text-rentmil-blue' }, cover.name),
+                                    cover.pros && h('div', { className: 'mb-3' },
+                                        h('h4', { className: 'text-sm font-semibold text-green-700 mb-2' }, '✓ Výhody:'),
+                                        h('ul', { className: 'text-sm text-gray-700 space-y-1' },
+                                            cover.pros.map((pro, idx) =>
+                                                h('li', { key: idx, className: 'flex items-start' },
+                                                    h('span', { className: 'text-green-600 mr-2' }, '•'),
+                                                    pro
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    cover.cons && h('div', null,
+                                        h('h4', { className: 'text-sm font-semibold text-red-700 mb-2' }, '✗ Nevýhody:'),
+                                        h('ul', { className: 'text-sm text-gray-700 space-y-1' },
+                                            cover.cons.map((con, idx) =>
+                                                h('li', { key: idx, className: 'flex items-start' },
+                                                    h('span', { className: 'text-red-600 mr-2' }, '•'),
+                                                    con
+                                                )
+                                            )
+                                        )
+                                    )
                                 )
                             )
                         );
                     }
 
-                    if (currentStep === 'extras') {
-                        return h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
-                            extras.map(extra =>
-                                h('div', {
-                                    key: extra.id,
-                                    onClick: () => {
-                                        setConfig(prev => ({
-                                            ...prev,
-                                            extras: prev.extras.includes(extra.id)
-                                                ? prev.extras.filter(id => id !== extra.id)
-                                                : [...prev.extras, extra.id]
-                                        }));
-                                    },
-                                    className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
-                                        config.extras.includes(extra.id) ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
-                                    }`
-                                },
-                                    config.extras.includes(extra.id) && h('div', { className: 'flex justify-end mb-1' },
-                                        h(Check, { size: 20, className: 'text-rentmil-water' })
-                                    ),
-                                    h('div', { className: 'font-semibold text-rentmil-blue' }, extra.name)
+                    // Krok 7: Příslušenství
+                    if (currentStep === 'accessories') {
+                        return h('div', { className: 'space-y-8' },
+                            // Osvětlení
+                            h('div', null,
+                                h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue border-b-2 border-rentmil-water pb-2' }, '1. Osvětlení'),
+                                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
+                                    lightingOptions.map(option =>
+                                        h('div', {
+                                            key: option.id,
+                                            onClick: () => setConfig(prev => ({ ...prev, lighting: option.id })),
+                                            className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                                config.lighting === option.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                            }`
+                                        },
+                                            h('h4', { className: 'font-bold text-rentmil-blue mb-2' }, option.name),
+                                            h('p', { className: 'text-sm text-gray-600' }, option.description)
+                                        )
+                                    )
+                                )
+                            ),
+                            // Protiproud
+                            h('div', null,
+                                h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue border-b-2 border-rentmil-water pb-2' }, '2. Protiproud'),
+                                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
+                                    countercurrentOptions.map(option =>
+                                        h('div', {
+                                            key: option.id,
+                                            onClick: () => setConfig(prev => ({ ...prev, countercurrent: option.id })),
+                                            className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                                config.countercurrent === option.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                            }`
+                                        },
+                                            h('h4', { className: 'font-bold text-rentmil-blue mb-2' }, option.name),
+                                            h('p', { className: 'text-sm text-gray-600' }, option.description)
+                                        )
+                                    )
+                                )
+                            ),
+                            // Úprava vody
+                            h('div', null,
+                                h('h3', { className: 'text-lg font-semibold mb-4 text-rentmil-blue border-b-2 border-rentmil-water pb-2' }, '3. Úprava vody'),
+                                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
+                                    waterTreatmentOptions.map(option =>
+                                        h('div', {
+                                            key: option.id,
+                                            onClick: () => setConfig(prev => ({ ...prev, waterTreatment: option.id })),
+                                            className: `p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-lg ${
+                                                config.waterTreatment === option.id ? 'border-rentmil-water bg-blue-50' : 'border-gray-300 bg-white'
+                                            }`
+                                        },
+                                            h('h4', { className: 'font-bold text-rentmil-blue mb-2' }, option.name),
+                                            h('p', { className: 'text-sm text-gray-600' }, option.description)
+                                        )
+                                    )
                                 )
                             )
                         );
@@ -598,24 +880,40 @@
                                         h('span', { className: 'text-gray-700' }, rozmerySummary)
                                     ),
                                     h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Barva:'),
+                                        h('span', { className: 'text-gray-700' }, colors.find(c => c.id === config.color)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Schodiště:'),
-                                        h('span', { className: 'text-gray-700' }, stairs.find(s => s.id === config.stairs)?.name)
+                                        h('span', { className: 'text-gray-700' },
+                                            config.shape === 'kruhovy'
+                                                ? 'Neaplikovatelné (kruhový bazén)'
+                                                : stairs.find(s => s.id === config.stairs)?.name
+                                        )
                                     ),
-                                    config.filtration && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
-                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Filtrace:'),
-                                        h('span', { className: 'text-gray-700' }, filtrations.find(f => f.id === config.filtration)?.name)
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Technologie:'),
+                                        h('span', { className: 'text-gray-700' }, technologies.find(t => t.id === config.technology)?.name)
                                     ),
-                                    config.heating && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
-                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Ohřev:'),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Osvětlení:'),
+                                        h('span', { className: 'text-gray-700' }, lightingOptions.find(l => l.id === config.lighting)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Protiproud:'),
+                                        h('span', { className: 'text-gray-700' }, countercurrentOptions.find(c => c.id === config.countercurrent)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Úprava vody:'),
+                                        h('span', { className: 'text-gray-700' }, waterTreatmentOptions.find(w => w.id === config.waterTreatment)?.name)
+                                    ),
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Ohřev vody:'),
                                         h('span', { className: 'text-gray-700' }, heating.find(h => h.id === config.heating)?.name)
                                     ),
-                                    config.cover && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
+                                    h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
                                         h('span', { className: 'font-semibold text-rentmil-blue' }, 'Zastřešení:'),
                                         h('span', { className: 'text-gray-700' }, covers.find(c => c.id === config.cover)?.name)
-                                    ),
-                                    config.extras.length > 0 && h('div', { className: 'flex justify-between py-2 border-b border-gray-200' },
-                                        h('span', { className: 'font-semibold text-rentmil-blue' }, 'Doplňky:'),
-                                        h('span', { className: 'text-gray-700' }, config.extras.map(id => extras.find(e => e.id === id)?.name).join(', '))
                                     )
                                 )
                             ),
@@ -657,8 +955,18 @@
                         }
                         return config.width !== null && config.length !== null && config.depth !== null;
                     }
-                    if (currentStep === 'stairs') return config.stairs !== null;
-                    if (currentStep === 'filtration') return config.filtration !== null;
+                    if (currentStep === 'color') return config.color !== null;
+                    if (currentStep === 'stairs') {
+                        // Pro kruhový bazén automaticky přeskočit (vždy true)
+                        if (config.shape === 'kruhovy') return true;
+                        return config.stairs !== null;
+                    }
+                    if (currentStep === 'technology') return config.technology !== null;
+                    if (currentStep === 'accessories') {
+                        return config.lighting !== null &&
+                               config.countercurrent !== null &&
+                               config.waterTreatment !== null;
+                    }
                     if (currentStep === 'heating') return config.heating !== null;
                     if (currentStep === 'cover') return config.cover !== null;
                     if (currentStep === 'contact') {
